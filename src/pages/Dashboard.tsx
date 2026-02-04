@@ -206,7 +206,7 @@ export default function Dashboard() {
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#6b7280', fontSize: 11 }}
+                  tick={{ fill: '#6b7280', fontSize: 11, fontWeight: 400 }}
                   tickFormatter={(value) => `R$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                   width={80}
                 />
