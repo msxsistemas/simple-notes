@@ -199,7 +199,7 @@ export default function Dashboard() {
                   dataKey="month" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 600 }}
                   dy={8}
                   interval={0}
                 />
