@@ -175,7 +175,7 @@ export default function Docs() {
                       <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                         <ArrowRight className="h-4 w-4" /> Request Body
                       </h4>
-                      <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground overflow-x-auto">
+                      <pre className="text-xs p-4 rounded-lg bg-zinc-900 text-zinc-100 overflow-x-auto">
                         {endpoint.request}
                       </pre>
                     </div>
@@ -184,7 +184,7 @@ export default function Docs() {
                     <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                       <ArrowRight className="h-4 w-4" /> Response
                     </h4>
-                    <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground overflow-x-auto">
+                    <pre className="text-xs p-4 rounded-lg bg-zinc-900 text-zinc-100 overflow-x-auto">
                       {endpoint.response}
                     </pre>
                   </div>
@@ -208,13 +208,13 @@ export default function Docs() {
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="text-sm font-medium mb-2">Header de autenticação (para endpoints autenticados)</h4>
-                  <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground">
+                  <pre className="text-xs p-4 rounded-lg bg-zinc-900 text-zinc-100">
 {`Authorization: Bearer SEU_TOKEN_SUPABASE`}
                   </pre>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="text-sm font-medium mb-2">Exemplo: Criar cobrança PIX pública</h4>
-                  <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground overflow-x-auto">
+                  <pre className="text-xs p-4 rounded-lg bg-zinc-900 text-zinc-100 overflow-x-auto">
 {`curl -X POST ${BASE_URL}/create-pix-charge-public \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -228,7 +228,7 @@ export default function Docs() {
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="text-sm font-medium mb-2">Exemplo: Checkout via URL (mais simples)</h4>
-                  <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground overflow-x-auto">
+                  <pre className="text-xs p-4 rounded-lg bg-zinc-900 text-zinc-100 overflow-x-auto">
 {`// Redirecione o usuário para:
 https://id-preview--f6f5871a-d89b-454a-ae1d-79dfaefd329b.lovable.app/pay?product=UUID_DO_PRODUTO
 
@@ -272,7 +272,7 @@ https://id-preview--f6f5871a-d89b-454a-ae1d-79dfaefd329b.lovable.app/pay?product
                 {/* Payload Example */}
                 <div>
                   <h4 className="text-sm font-medium mb-2">Exemplo de Payload</h4>
-                  <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground overflow-x-auto">
+                  <pre className="text-xs p-4 rounded-lg bg-zinc-900 text-zinc-100 overflow-x-auto">
 {`{
   "event": "payment_approved",
   "timestamp": "2024-01-15T10:35:00Z",
