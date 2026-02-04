@@ -72,10 +72,10 @@ export default function Fees() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">{fee.description}</p>
+              <p className="text-base text-muted-foreground mb-4">{fee.description}</p>
               <div className="space-y-1">
                 <p className={`text-2xl font-bold ${fee.valueColor}`}>{fee.feeText}</p>
-                <p className="text-sm text-muted-foreground">{fee.feeNote}</p>
+                <p className="text-base text-muted-foreground">{fee.feeNote}</p>
               </div>
             </CardContent>
           </Card>
@@ -91,7 +91,7 @@ export default function Fees() {
             </div>
             <div>
               <CardTitle className="text-xl font-bold">Limites por Horário</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Valores máximos por transação conforme período do dia
               </CardDescription>
             </div>
@@ -107,11 +107,11 @@ export default function Fees() {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg">{limit.title}</h4>
-                    <p className="text-sm text-muted-foreground">{limit.subtitle}</p>
+                    <p className="text-base text-muted-foreground">{limit.subtitle}</p>
                   </div>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-background rounded-lg border border-border/30">
-                  <span className="text-sm text-muted-foreground">Limite máximo</span>
+                  <span className="text-base text-muted-foreground">Limite máximo</span>
                   <span className="font-bold text-lg">{limit.maxTransaction}</span>
                 </div>
               </div>
@@ -129,12 +129,12 @@ export default function Fees() {
             </div>
             <div>
               <h4 className="font-bold text-lg mb-2">Como funcionam as taxas?</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-base text-muted-foreground leading-relaxed">
                 A taxa de PIX entrada é calculada como <strong className="text-foreground">1,40% OU R$ 0,80</strong> — sempre será cobrado o <strong className="text-foreground">maior valor</strong> entre os dois. 
               </p>
               <div className="mt-4 p-4 bg-background/50 rounded-lg border border-border/30">
-                <p className="text-sm font-medium mb-2">Exemplos práticos:</p>
-                <ul className="text-sm text-muted-foreground space-y-1">
+                <p className="text-base font-medium mb-2">Exemplos práticos:</p>
+                <ul className="text-base text-muted-foreground space-y-1">
                   <li>• Venda de <strong className="text-foreground">R$ 50,00</strong> → Taxa: R$ 0,80 (mínimo)</li>
                   <li>• Venda de <strong className="text-foreground">R$ 100,00</strong> → Taxa: R$ 1,40 (1,40%)</li>
                   <li>• Venda de <strong className="text-foreground">R$ 500,00</strong> → Taxa: R$ 7,00 (1,40%)</li>
