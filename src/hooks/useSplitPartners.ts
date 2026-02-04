@@ -123,8 +123,10 @@ export function useCreateSplitPartner() {
         if (subaccountError) {
           console.error('Error creating Woovi subaccount:', subaccountError);
         } else if (subaccountResult?.success && subaccountResult?.data) {
-          wooviSubaccountId = subaccountResult.data.subaccountId || subaccountResult.data.id || null;
-          console.log('Woovi subaccount created:', wooviSubaccountId);
+          // Woovi returns subAccount with the pixKey as identifier
+          const subAccount = subaccountResult.data.subAccount || subaccountResult.data;
+          wooviSubaccountId = subAccount?.subaccountId || subAccount?.id || subAccount?.pixKey || null;
+          console.log('Woovi subaccount created:', wooviSubaccountId, subaccountResult.data);
         } else if (subaccountResult?.error) {
           console.warn('Woovi subaccount creation warning:', subaccountResult.error);
         }
