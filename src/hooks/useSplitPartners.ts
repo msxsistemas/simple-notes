@@ -63,6 +63,66 @@ export function useWooviSubaccount() {
   });
 }
 
+// Hook to sync Woovi subaccounts with local database
+export function useSyncWooviSubaccounts() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      // Get all subaccounts from Woovi
+      const { data: wooviResult, error: wooviError } = await supabase.functions.invoke('woovi-subaccount', {
+        body: { action: 'list' },
+      });
+
+      if (wooviError) throw wooviError;
+      if (!wooviResult?.success) throw new Error(wooviResult?.error || 'Failed to list subaccounts');
+
+      const wooviSubaccounts = wooviResult.data || [];
+      console.log('Woovi subaccounts found:', wooviSubaccounts.length, wooviSubaccounts);
+
+      // Get all local partners
+      const { data: partners, error: partnersError } = await (supabase
+        .from('split_partners' as any)
+        .select('id, pix_key, woovi_subaccount_id') as any);
+
+      if (partnersError) throw partnersError;
+
+      let updatedCount = 0;
+
+      // Match by pixKey and update woovi_subaccount_id
+      for (const partner of partners || []) {
+        const matchingSubaccount = wooviSubaccounts.find(
+          (sub: { pixKey?: string; subaccountId?: string }) => sub.pixKey === partner.pix_key
+        );
+
+        if (matchingSubaccount && !partner.woovi_subaccount_id) {
+          const subaccountId = matchingSubaccount.subaccountId || matchingSubaccount.pixKey;
+          
+          const { error: updateError } = await (supabase
+            .from('split_partners' as any)
+            .update({ woovi_subaccount_id: subaccountId } as any)
+            .eq('id', partner.id) as any);
+
+          if (!updateError) {
+            updatedCount++;
+            console.log('Updated partner', partner.id, 'with subaccount', subaccountId);
+          }
+        }
+      }
+
+      return { 
+        synced: updatedCount, 
+        total: partners?.length || 0,
+        wooviSubaccounts: wooviSubaccounts.length 
+      };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['split_partners'] });
+      queryClient.invalidateQueries({ queryKey: ['split_partners_active'] });
+    },
+  });
+}
+
 export function useSplitPartners() {
   const { user } = useAuth();
 

@@ -43,6 +43,7 @@ import {
   XCircle,
   Mail,
   FileText,
+  RefreshCw,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFeeConfig } from '@/hooks/useFeeConfig';
@@ -50,7 +51,8 @@ import {
   useSplitPartners, 
   useCreateSplitPartner, 
   useUpdateSplitPartner,
-  useDeleteSplitPartner 
+  useDeleteSplitPartner,
+  useSyncWooviSubaccounts,
 } from '@/hooks/useSplitPartners';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -73,6 +75,7 @@ export default function SplitConfig() {
   const createPartner = useCreateSplitPartner();
   const updatePartner = useUpdateSplitPartner();
   const deletePartner = useDeleteSplitPartner();
+  const syncSubaccounts = useSyncWooviSubaccounts();
 
   const isLoading = feeLoading || partnersLoading;
   const splitEnabled = (feeConfig as { split_enabled?: boolean })?.split_enabled ?? false;
@@ -180,6 +183,23 @@ export default function SplitConfig() {
     setSplitValue('');
   };
 
+  const handleSyncSubaccounts = async () => {
+    try {
+      const result = await syncSubaccounts.mutateAsync();
+      toast({
+        title: 'Sincronização concluída',
+        description: `${result.synced} parceiro(s) sincronizado(s) com a Woovi`,
+      });
+    } catch (error) {
+      console.error('Sync error:', error);
+      toast({
+        title: 'Erro na sincronização',
+        description: 'Não foi possível sincronizar com a Woovi',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const totalPercentage = partners
     ?.filter(p => p.status === 'active' && p.split_type === 'percentage')
     .reduce((sum, p) => sum + Number(p.split_value), 0) || 0;
@@ -284,13 +304,24 @@ export default function SplitConfig() {
             <CardTitle>Parceiros de Split</CardTitle>
             <CardDescription>Gerencie quem recebe parte dos seus pagamentos</CardDescription>
           </div>
-          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogTrigger asChild>
-              <Button className="gradient-primary gap-2">
-                <Plus className="h-4 w-4" />
-                Adicionar Parceiro
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSyncSubaccounts}
+              disabled={syncSubaccounts.isPending}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncSubaccounts.isPending ? 'animate-spin' : ''}`} />
+              Sincronizar Woovi
+            </Button>
+            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+              <DialogTrigger asChild>
+                <Button className="gradient-primary gap-2">
+                  <Plus className="h-4 w-4" />
+                  Adicionar Parceiro
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Novo Parceiro de Split</DialogTitle>
@@ -379,6 +410,7 @@ export default function SplitConfig() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           {!partners || partners.length === 0 ? (
