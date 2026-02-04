@@ -36,10 +36,16 @@ const fees = [
 
 const limits = [
   {
-    title: 'PIX',
+    title: 'PIX - Diurno',
+    subtitle: '08:00h às 20:00h',
     icon: Landmark,
-    maxTransaction: 'R$ 50.000,00',
-    dailyLimit: 'R$ 100.000,00',
+    maxTransaction: 'R$ 25.000,00',
+  },
+  {
+    title: 'PIX - Noturno',
+    subtitle: '20:00h às 08:00h',
+    icon: Landmark,
+    maxTransaction: 'R$ 5.000,00',
   },
 ];
 
@@ -96,16 +102,15 @@ export default function Fees() {
                   <div className="bg-primary/10 p-2 rounded-lg">
                     <limit.icon className="h-5 w-5 text-primary" />
                   </div>
-                  <h4 className="font-semibold">{limit.title}</h4>
+                  <div>
+                    <h4 className="font-semibold">{limit.title}</h4>
+                    <p className="text-xs text-muted-foreground">{limit.subtitle}</p>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Máx. por transação</span>
+                    <span className="text-muted-foreground">Limite por transação</span>
                     <span className="font-medium">{limit.maxTransaction}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Limite diário</span>
-                    <span className="font-medium">{limit.dailyLimit}</span>
                   </div>
                 </div>
               </div>
