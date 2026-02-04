@@ -207,13 +207,8 @@ export default function Dashboard() {
                   axisLine={false} 
                   tickLine={false} 
                   tick={{ fill: '#6b7280', fontSize: 11 }}
-                  tickFormatter={(value) => {
-                    if (value >= 1000) {
-                      return `R$${(value / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 1 })}k`;
-                    }
-                    return `R$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                  }}
-                  width={75}
+                  tickFormatter={(value) => `R$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  width={80}
                 />
                 <ChartTooltip 
                   cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
