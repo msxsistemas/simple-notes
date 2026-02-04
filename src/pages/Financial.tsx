@@ -249,7 +249,7 @@ export default function Financial() {
                 Sacar
               </Button>
             </DialogTrigger>
-            <DialogContent className="p-0 gap-0 overflow-hidden max-w-md">
+            <DialogContent className="p-0 gap-0 overflow-hidden max-w-md [&>button]:hidden">
               {/* Header Verde */}
               <div className="bg-primary px-6 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-primary-foreground">Solicitar saque</h2>
@@ -293,9 +293,6 @@ export default function Financial() {
                       <SelectContent>
                         <SelectItem value="cpf">CPF</SelectItem>
                         <SelectItem value="cnpj">CNPJ</SelectItem>
-                        <SelectItem value="email">E-mail</SelectItem>
-                        <SelectItem value="phone">Telefone</SelectItem>
-                        <SelectItem value="random">Chave Aleatória</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -304,7 +301,7 @@ export default function Financial() {
                     <Label htmlFor="pix" className="text-foreground font-medium">Chave PIX:</Label>
                     <Input
                       id="pix"
-                      placeholder={pixKeyType === 'cpf' ? 'CPF/CNPJ' : pixKeyType === 'email' ? 'email@exemplo.com' : pixKeyType === 'phone' ? '(00) 00000-0000' : 'Chave PIX'}
+                      placeholder="Chave PIX"
                       value={pixKey}
                       onChange={(e) => setPixKey(e.target.value)}
                       className="h-11"
@@ -325,14 +322,19 @@ export default function Financial() {
                     <p className="text-xs text-muted-foreground mb-1">Taxa de</p>
                     <p className="text-xs text-muted-foreground">Saque</p>
                     <p className="text-sm font-bold text-destructive mt-1">
-                      R$ {(feeConfig?.pix_out_fixed || 0.99).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {(feeConfig?.pix_out_fixed || 2).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="text-center p-3 border rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">Valor a receber na</p>
                     <p className="text-xs text-muted-foreground">conta</p>
                     <p className="text-sm font-bold text-primary mt-1">
-                      R$ {Math.max(0, (parseFloat(withdrawAmount) || 0) - (feeConfig?.pix_out_fixed || 0.99)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {(() => {
+                        const amount = parseFloat(withdrawAmount) || 0;
+                        const fee = feeConfig?.pix_out_fixed || 2;
+                        if (amount <= 0) return '0,00';
+                        return Math.max(0, amount - fee).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                      })()}
                     </p>
                   </div>
                 </div>
