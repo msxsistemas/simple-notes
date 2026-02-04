@@ -28,7 +28,7 @@ const fees = [
     icon: ArrowDownRight,
     iconColor: 'text-primary',
     borderColor: 'border-primary',
-    feeText: 'R$ 2,00',
+    feeText: 'R$ 1,50',
     feeNote: 'taxa fixa',
     valueColor: 'text-primary',
   },
