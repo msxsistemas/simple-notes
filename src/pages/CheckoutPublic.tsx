@@ -145,12 +145,12 @@ export default function CheckoutPublic() {
       // For public checkout, we call the edge function directly without auth
       // The edge function will use a system/merchant context
       const response = await fetch(
-        `https://wkuwcuhqmeqnjppdfzla.supabase.co/functions/v1/create-pix-charge-public`,
+        `https://mqsdkrmgsflisswrwkas.supabase.co/functions/v1/create-pix-charge-public`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdXdjdWhxbWVxbmpwcGRmemxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNTc0NDcsImV4cCI6MjA4NTczMzQ0N30.7Gp2TGlGFWuvYfVsKs9Puh_SRPpaUKEP-Qys7eI8lQc',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xc2Rrcm1nc2ZsaXNzd3J3a2FzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNTQ3MDgsImV4cCI6MjA4NTczMDcwOH0.LVIoQJEJx5TVTJF3kUbuvFuVIct9_0tI07z-JGh2cus',
           },
           body: JSON.stringify({
             amount: parseFloat(amount),

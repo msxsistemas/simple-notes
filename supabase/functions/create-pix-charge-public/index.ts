@@ -82,13 +82,13 @@ interface WooviChargeResponse {
 }
 
 // Calculate splits for Woovi API
-// Woovi charges ~1.29% fee on PIX, so we must leave room for it
+// Woovi charges ~1.29% on PIX - we need to reserve this from the split amount
 function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSplit[] {
   const splits: WooviSplit[] = [];
   
-  // Reserve at least 2% for Woovi fees + buffer
-  const maxSplitableCents = Math.floor(amountCents * 0.95);
-  let totalSplitCents = 0;
+  // Woovi fee is ~1.29%, we reserve 2% to be safe
+  const wooviFeeReserve = 0.02;
+  const maxSplitableAmount = amountCents * (1 - wooviFeeReserve);
   
   for (const partner of partners) {
     if (partner.status !== 'active') continue;
@@ -96,14 +96,15 @@ function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSp
     let splitValueCents: number;
     
     if (partner.split_type === 'percentage') {
-      splitValueCents = Math.round(amountCents * (partner.split_value / 100));
+      // Calculate the percentage of the splitable amount (after Woovi fee reserve)
+      splitValueCents = Math.floor(maxSplitableAmount * (partner.split_value / 100));
     } else {
       splitValueCents = Math.round(partner.split_value * 100);
     }
     
-    // Ensure we don't exceed the maximum splitable amount
-    if (totalSplitCents + splitValueCents > maxSplitableCents) {
-      splitValueCents = Math.max(0, maxSplitableCents - totalSplitCents);
+    // Ensure split doesn't exceed max splitable amount
+    if (splitValueCents > maxSplitableAmount) {
+      splitValueCents = Math.floor(maxSplitableAmount);
     }
     
     if (splitValueCents > 0) {
@@ -112,11 +113,10 @@ function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSp
         value: splitValueCents,
         splitType: 'SPLIT_SUB_ACCOUNT',
       });
-      totalSplitCents += splitValueCents;
     }
   }
   
-  console.log(`Split calculation: total=${amountCents}c, maxSplitable=${maxSplitableCents}c, allocated=${totalSplitCents}c`);
+  console.log(`Split: total=${amountCents}c, maxSplitable=${Math.floor(maxSplitableAmount)}c, splits=${JSON.stringify(splits)}`);
   
   return splits;
 }
