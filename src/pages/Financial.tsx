@@ -375,11 +375,12 @@ export default function Financial() {
                     <p className="text-xs text-muted-foreground">conta</p>
                     <p className="text-sm font-bold text-primary mt-1">
                       R$ {(() => {
-                        if (!withdrawAmount || withdrawAmount.trim() === '') return '0,00';
-                        const amount = parseFloat(withdrawAmount.replace(',', '.')) || 0;
                         const fee = feeConfig?.pix_out_fixed || 0.99;
-                        if (amount <= 0) return '0,00';
-                        return Math.max(0, amount - fee).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                        const amountToUse = (!withdrawAmount || withdrawAmount.trim() === '') 
+                          ? withdrawableBalance 
+                          : parseFloat(withdrawAmount.replace(',', '.')) || 0;
+                        if (amountToUse <= 0) return '0,00';
+                        return Math.max(0, amountToUse - fee).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
                       })()}
                     </p>
                   </div>
