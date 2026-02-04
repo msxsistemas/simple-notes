@@ -82,8 +82,13 @@ interface WooviChargeResponse {
 }
 
 // Calculate splits for Woovi API
+// Woovi charges ~1.29% fee on PIX, so we must leave room for it
 function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSplit[] {
   const splits: WooviSplit[] = [];
+  
+  // Reserve at least 2% for Woovi fees + buffer
+  const maxSplitableCents = Math.floor(amountCents * 0.95);
+  let totalSplitCents = 0;
   
   for (const partner of partners) {
     if (partner.status !== 'active') continue;
@@ -96,14 +101,22 @@ function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSp
       splitValueCents = Math.round(partner.split_value * 100);
     }
     
-    if (splitValueCents > 0 && splitValueCents < amountCents) {
+    // Ensure we don't exceed the maximum splitable amount
+    if (totalSplitCents + splitValueCents > maxSplitableCents) {
+      splitValueCents = Math.max(0, maxSplitableCents - totalSplitCents);
+    }
+    
+    if (splitValueCents > 0) {
       splits.push({
         pixKey: partner.pix_key,
         value: splitValueCents,
         splitType: 'SPLIT_SUB_ACCOUNT',
       });
+      totalSplitCents += splitValueCents;
     }
   }
+  
+  console.log(`Split calculation: total=${amountCents}c, maxSplitable=${maxSplitableCents}c, allocated=${totalSplitCents}c`);
   
   return splits;
 }
