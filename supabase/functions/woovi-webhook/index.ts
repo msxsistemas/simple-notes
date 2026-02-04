@@ -1,9 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Woovi will often "test"/verify the endpoint using GET/HEAD or a POST without a JSON body.
+// This function must respond with 200 OK in those cases so the webhook can be registered.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-openpix-signature",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-openpix-signature",
 };
 
 interface WooviWebhookPayload {
@@ -43,6 +45,27 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Woovi verification / manual checks
+  if (req.method === "GET" || req.method === "HEAD") {
+    return new Response(
+      JSON.stringify({ ok: true, message: "woovi-webhook is up" }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ ok: true, ignored: true, method: req.method }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -59,7 +82,20 @@ Deno.serve(async (req) => {
     const signature = req.headers.get("x-openpix-signature") || req.headers.get("x-webhook-signature");
     console.log("Received webhook with signature:", signature ? "present" : "missing");
 
-    const body: WooviWebhookPayload = await req.json();
+    let body: WooviWebhookPayload;
+    try {
+      body = (await req.json()) as WooviWebhookPayload;
+    } catch (e) {
+      // Some providers send an empty body during verification.
+      console.log("Webhook POST received without valid JSON (likely verification).", e);
+      return new Response(
+        JSON.stringify({ ok: true, verified: true }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
     console.log("Webhook event received:", body.event);
     console.log("Webhook payload:", JSON.stringify(body, null, 2));
 
