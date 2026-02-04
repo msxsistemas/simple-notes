@@ -25,6 +25,12 @@ export interface CreateWebhookData {
   events: string[];
 }
 
+export interface UpdateWebhookData {
+  url?: string;
+  events?: string[];
+  status?: 'active' | 'inactive';
+}
+
 export function useWebhooks() {
   const { user } = useAuth();
 
@@ -75,6 +81,27 @@ export function useCreateWebhook() {
           ...data,
           user_id: user.id,
         } as any)
+        .select()
+        .single() as any);
+
+      if (error) throw error;
+      return webhook as Webhook;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['webhooks'] });
+    },
+  });
+}
+
+export function useUpdateWebhook() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ webhookId, data }: { webhookId: string; data: UpdateWebhookData }) => {
+      const { data: webhook, error } = await (supabase
+        .from('webhooks' as any)
+        .update(data as any)
+        .eq('id', webhookId)
         .select()
         .single() as any);
 

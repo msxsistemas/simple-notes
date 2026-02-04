@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -28,6 +27,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Webhook, 
   Key, 
@@ -37,43 +37,25 @@ import {
   EyeOff,
   Trash2,
   RefreshCw,
+  Pencil,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  useWebhooks,
+  useApiCredentials,
+  useCreateWebhook,
+  useUpdateWebhook,
+  useDeleteWebhook,
+  useCreateApiCredential,
+  useRevokeApiCredential,
+  Webhook as WebhookType,
+} from '@/hooks/useIntegrations';
 
 const webhookSchema = z.object({
   url: z.string().url('URL inválida'),
 });
 
 type WebhookFormData = z.infer<typeof webhookSchema>;
-
-// Mock data
-const initialWebhooks = [
-  {
-    id: 'WH001',
-    url: 'https://myapp.com/webhooks/pixpay',
-    events: ['payment_pending', 'payment_approved', 'payment_cancelled'] as const,
-    status: 'active' as const,
-    created_at: '2024-01-10T00:00:00Z',
-  },
-];
-
-type CredentialStatus = 'active' | 'revoked';
-
-interface Credential {
-  id: string;
-  token: string;
-  status: CredentialStatus;
-  created_at: string;
-}
-
-const initialCredentials: Credential[] = [
-  {
-    id: 'API001',
-    token: 'pk_live_a1b2c3d4e5f6g7h8i9j0',
-    status: 'active',
-    created_at: '2024-01-01T00:00:00Z',
-  },
-];
 
 const webhookEvents = [
   { id: 'payment_pending', label: 'Pagamento Pendente' },
@@ -82,47 +64,99 @@ const webhookEvents = [
 ];
 
 export default function Integrations() {
-  const [webhooks, setWebhooks] = useState(initialWebhooks);
-  const [credentials, setCredentials] = useState(initialCredentials);
   const [isWebhookOpen, setIsWebhookOpen] = useState(false);
+  const [editingWebhook, setEditingWebhook] = useState<WebhookType | null>(null);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [showToken, setShowToken] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const { data: webhooks = [], isLoading: loadingWebhooks } = useWebhooks();
+  const { data: credentials = [], isLoading: loadingCredentials } = useApiCredentials();
+  const createWebhook = useCreateWebhook();
+  const updateWebhook = useUpdateWebhook();
+  const deleteWebhookMutation = useDeleteWebhook();
+  const createApiCredential = useCreateApiCredential();
+  const revokeApiCredential = useRevokeApiCredential();
 
   const form = useForm<WebhookFormData>({
     resolver: zodResolver(webhookSchema),
     defaultValues: { url: '' },
   });
 
-  const onSubmitWebhook = (data: WebhookFormData) => {
-    const newWebhook = {
-      id: `WH${String(webhooks.length + 1).padStart(3, '0')}`,
-      url: data.url,
-      events: selectedEvents as any,
-      status: 'active' as const,
-      created_at: new Date().toISOString(),
-    };
-    setWebhooks([...webhooks, newWebhook]);
-    toast({ title: 'Webhook criado!', description: 'Seu webhook foi configurado com sucesso.' });
+  // Reset form when dialog opens/closes or when editing
+  useEffect(() => {
+    if (editingWebhook) {
+      form.reset({ url: editingWebhook.url });
+      setSelectedEvents(editingWebhook.events || []);
+    } else if (!isWebhookOpen) {
+      form.reset({ url: '' });
+      setSelectedEvents([]);
+    }
+  }, [editingWebhook, isWebhookOpen, form]);
+
+  const handleOpenCreate = () => {
+    setEditingWebhook(null);
+    setSelectedEvents([]);
+    form.reset({ url: '' });
+    setIsWebhookOpen(true);
+  };
+
+  const handleOpenEdit = (webhook: WebhookType) => {
+    setEditingWebhook(webhook);
+    setIsWebhookOpen(true);
+  };
+
+  const handleCloseDialog = () => {
     setIsWebhookOpen(false);
-    form.reset();
+    setEditingWebhook(null);
+    form.reset({ url: '' });
     setSelectedEvents([]);
   };
 
-  const deleteWebhook = (id: string) => {
-    setWebhooks(webhooks.filter(w => w.id !== id));
-    toast({ title: 'Webhook removido' });
+  const onSubmitWebhook = async (data: WebhookFormData) => {
+    try {
+      if (editingWebhook) {
+        await updateWebhook.mutateAsync({
+          webhookId: editingWebhook.id,
+          data: {
+            url: data.url,
+            events: selectedEvents,
+          },
+        });
+        toast({ title: 'Webhook atualizado!', description: 'As alterações foram salvas.' });
+      } else {
+        await createWebhook.mutateAsync({
+          url: data.url,
+          events: selectedEvents,
+        });
+        toast({ title: 'Webhook criado!', description: 'Seu webhook foi configurado com sucesso.' });
+      }
+      handleCloseDialog();
+    } catch (error) {
+      toast({ 
+        title: 'Erro', 
+        description: 'Não foi possível salvar o webhook.', 
+        variant: 'destructive' 
+      });
+    }
   };
 
-  const generateApiKey = () => {
-    const newKey = {
-      id: `API${String(credentials.length + 1).padStart(3, '0')}`,
-      token: `pk_live_${crypto.randomUUID().replace(/-/g, '').substring(0, 24)}`,
-      status: 'active' as const,
-      created_at: new Date().toISOString(),
-    };
-    setCredentials([...credentials, newKey]);
-    toast({ title: 'API Key gerada!', description: 'Sua nova chave de API foi criada.' });
+  const handleDeleteWebhook = async (id: string) => {
+    try {
+      await deleteWebhookMutation.mutateAsync(id);
+      toast({ title: 'Webhook removido' });
+    } catch (error) {
+      toast({ title: 'Erro ao remover webhook', variant: 'destructive' });
+    }
+  };
+
+  const handleGenerateApiKey = async () => {
+    try {
+      await createApiCredential.mutateAsync();
+      toast({ title: 'API Key gerada!', description: 'Sua nova chave de API foi criada.' });
+    } catch (error) {
+      toast({ title: 'Erro ao gerar chave', variant: 'destructive' });
+    }
   };
 
   const copyToken = (token: string) => {
@@ -130,11 +164,13 @@ export default function Integrations() {
     toast({ title: 'Copiado!', description: 'Token copiado para a área de transferência.' });
   };
 
-  const revokeApiKey = (id: string) => {
-    setCredentials(credentials.map(c => 
-      c.id === id ? { ...c, status: 'revoked' as const } : c
-    ));
-    toast({ title: 'Chave revogada', description: 'A chave de API foi desativada.' });
+  const handleRevokeApiKey = async (id: string) => {
+    try {
+      await revokeApiCredential.mutateAsync(id);
+      toast({ title: 'Chave revogada', description: 'A chave de API foi desativada.' });
+    } catch (error) {
+      toast({ title: 'Erro ao revogar chave', variant: 'destructive' });
+    }
   };
 
   return (
@@ -159,7 +195,10 @@ export default function Integrations() {
                 <CardTitle>Webhooks</CardTitle>
                 <CardDescription>Receba notificações em tempo real sobre pagamentos</CardDescription>
               </div>
-              <Dialog open={isWebhookOpen} onOpenChange={setIsWebhookOpen}>
+              <Dialog open={isWebhookOpen} onOpenChange={(open) => {
+                if (!open) handleCloseDialog();
+                else handleOpenCreate();
+              }}>
                 <DialogTrigger asChild>
                   <Button className="gradient-primary gap-2">
                     <Plus className="h-4 w-4" />
@@ -168,9 +207,14 @@ export default function Integrations() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Configurar Webhook</DialogTitle>
+                    <DialogTitle>
+                      {editingWebhook ? 'Editar Webhook' : 'Configurar Webhook'}
+                    </DialogTitle>
                     <DialogDescription>
-                      Configure uma URL para receber eventos de pagamento
+                      {editingWebhook 
+                        ? 'Atualize a URL e os eventos do webhook'
+                        : 'Configure uma URL para receber eventos de pagamento'
+                      }
                     </DialogDescription>
                   </DialogHeader>
                   <Form {...form}>
@@ -212,11 +256,15 @@ export default function Integrations() {
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setIsWebhookOpen(false)}>
+                        <Button type="button" variant="outline" onClick={handleCloseDialog}>
                           Cancelar
                         </Button>
-                        <Button type="submit" className="gradient-primary">
-                          Criar Webhook
+                        <Button 
+                          type="submit" 
+                          className="gradient-primary"
+                          disabled={createWebhook.isPending || updateWebhook.isPending}
+                        >
+                          {editingWebhook ? 'Salvar Alterações' : 'Criar Webhook'}
                         </Button>
                       </DialogFooter>
                     </form>
@@ -225,51 +273,77 @@ export default function Integrations() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead>URL</TableHead>
-                    <TableHead>Eventos</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Criado em</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {webhooks.map((webhook) => (
-                    <TableRow key={webhook.id}>
-                      <TableCell className="font-mono text-sm max-w-[200px] truncate">
-                        {webhook.url}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          {webhook.events.map((event) => (
-                            <Badge key={event} variant="secondary" className="text-xs">
-                              {event}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className="bg-success/10 text-success">Ativo</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(webhook.created_at).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteWebhook(webhook.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+              {loadingWebhooks ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>URL</TableHead>
+                      <TableHead>Eventos</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Criado em</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {webhooks.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                          Nenhum webhook configurado
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      webhooks.map((webhook) => (
+                        <TableRow key={webhook.id}>
+                          <TableCell className="font-mono text-sm max-w-[200px] truncate">
+                            {webhook.url}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1 flex-wrap">
+                              {webhook.events?.map((event) => (
+                                <Badge key={event} variant="secondary" className="text-xs">
+                                  {event}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={webhook.status === 'active' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}>
+                              {webhook.status === 'active' ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(webhook.created_at).toLocaleDateString('pt-BR')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleOpenEdit(webhook)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteWebhook(webhook.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              )}
 
               {/* Webhook Payload Example */}
               <div className="mt-6 p-4 rounded-lg bg-muted/50">
@@ -303,71 +377,90 @@ export default function Integrations() {
                 <CardTitle>Credenciais API</CardTitle>
                 <CardDescription>Gerencie suas chaves de acesso à API</CardDescription>
               </div>
-              <Button onClick={generateApiKey} className="gradient-primary gap-2">
+              <Button 
+                onClick={handleGenerateApiKey} 
+                className="gradient-primary gap-2"
+                disabled={createApiCredential.isPending}
+              >
                 <RefreshCw className="h-4 w-4" />
                 Gerar Nova Chave
               </Button>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead>Token</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Criado em</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {credentials.map((cred) => (
-                    <TableRow key={cred.id}>
-                      <TableCell className="font-mono text-sm">
-                        <div className="flex items-center gap-2">
-                          {showToken === cred.id ? cred.token : cred.token.substring(0, 12) + '••••••••••••'}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowToken(showToken === cred.id ? null : cred.id)}
-                          >
-                            {showToken === cred.id ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {cred.status === 'active' ? (
-                          <Badge className="bg-success/10 text-success">Ativo</Badge>
-                        ) : (
-                          <Badge className="bg-destructive/10 text-destructive">Revogado</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(cred.created_at).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => copyToken(cred.token)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          {cred.status === 'active' && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => revokeApiKey(cred.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
+              {loadingCredentials ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead>Token</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Criado em</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {credentials.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          Nenhuma credencial criada
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      credentials.map((cred) => (
+                        <TableRow key={cred.id}>
+                          <TableCell className="font-mono text-sm">
+                            <div className="flex items-center gap-2">
+                              {showToken === cred.id ? cred.token : cred.token.substring(0, 12) + '••••••••••••'}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setShowToken(showToken === cred.id ? null : cred.id)}
+                              >
+                                {showToken === cred.id ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {cred.status === 'active' ? (
+                              <Badge className="bg-success/10 text-success">Ativo</Badge>
+                            ) : (
+                              <Badge className="bg-destructive/10 text-destructive">Revogado</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(cred.created_at).toLocaleDateString('pt-BR')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => copyToken(cred.token)}
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              {cred.status === 'active' && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleRevokeApiKey(cred.id)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
