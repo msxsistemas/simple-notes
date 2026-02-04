@@ -29,10 +29,10 @@ export function useWithdrawals() {
   return useQuery({
     queryKey: ['withdrawals', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('withdrawals')
+      const { data, error } = await (supabase
+        .from('withdrawals' as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as Withdrawal[];
@@ -49,15 +49,15 @@ export function useCreateWithdrawal() {
     mutationFn: async (data: CreateWithdrawalData) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data: withdrawal, error } = await supabase
-        .from('withdrawals')
+      const { data: withdrawal, error } = await (supabase
+        .from('withdrawals' as any)
         .insert({
           ...data,
           user_id: user.id,
           total: data.amount - data.fee,
-        })
+        } as any)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return withdrawal as Withdrawal;

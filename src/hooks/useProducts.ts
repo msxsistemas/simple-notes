@@ -44,10 +44,10 @@ export function useProducts() {
   return useQuery({
     queryKey: ['products', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
+      const { data, error } = await (supabase
+        .from('products' as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as Product[];
@@ -62,11 +62,11 @@ export function useProduct(productId: string) {
   return useQuery({
     queryKey: ['product', productId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
+      const { data, error } = await (supabase
+        .from('products' as any)
         .select('*')
         .eq('id', productId)
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return data as Product;
@@ -81,11 +81,11 @@ export function useOrderBumps(productId: string) {
   return useQuery({
     queryKey: ['order_bumps', productId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('order_bumps')
+      const { data, error } = await (supabase
+        .from('order_bumps' as any)
         .select('*')
         .eq('product_id', productId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as OrderBump[];
@@ -102,15 +102,15 @@ export function useCreateProduct() {
     mutationFn: async (data: CreateProductData) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data: product, error } = await supabase
-        .from('products')
+      const { data: product, error } = await (supabase
+        .from('products' as any)
         .insert({
           ...data,
           user_id: user.id,
           checkout_url: `${window.location.origin}/checkout/${crypto.randomUUID()}`,
-        })
+        } as any)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return product as Product;
@@ -126,12 +126,12 @@ export function useUpdateProduct() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: Partial<Product> & { id: string }) => {
-      const { data: product, error } = await supabase
-        .from('products')
-        .update(data)
+      const { data: product, error } = await (supabase
+        .from('products' as any)
+        .update(data as any)
         .eq('id', id)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return product as Product;
@@ -148,10 +148,10 @@ export function useDeleteProduct() {
 
   return useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase
-        .from('products')
+      const { error } = await (supabase
+        .from('products' as any)
         .delete()
-        .eq('id', productId);
+        .eq('id', productId) as any);
 
       if (error) throw error;
     },
@@ -166,11 +166,11 @@ export function useCreateOrderBump() {
 
   return useMutation({
     mutationFn: async (data: CreateOrderBumpData) => {
-      const { data: orderBump, error } = await supabase
-        .from('order_bumps')
-        .insert(data)
+      const { data: orderBump, error } = await (supabase
+        .from('order_bumps' as any)
+        .insert(data as any)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return orderBump as OrderBump;
@@ -186,10 +186,10 @@ export function useDeleteOrderBump() {
 
   return useMutation({
     mutationFn: async ({ id, product_id }: { id: string; product_id: string }) => {
-      const { error } = await supabase
-        .from('order_bumps')
+      const { error } = await (supabase
+        .from('order_bumps' as any)
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
 
       if (error) throw error;
       return product_id;

@@ -31,10 +31,10 @@ export function useWebhooks() {
   return useQuery({
     queryKey: ['webhooks', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('webhooks')
+      const { data, error } = await (supabase
+        .from('webhooks' as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as Webhook[];
@@ -49,10 +49,10 @@ export function useApiCredentials() {
   return useQuery({
     queryKey: ['api_credentials', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('api_credentials')
+      const { data, error } = await (supabase
+        .from('api_credentials' as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as ApiCredential[];
@@ -69,14 +69,14 @@ export function useCreateWebhook() {
     mutationFn: async (data: CreateWebhookData) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data: webhook, error } = await supabase
-        .from('webhooks')
+      const { data: webhook, error } = await (supabase
+        .from('webhooks' as any)
         .insert({
           ...data,
           user_id: user.id,
-        })
+        } as any)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return webhook as Webhook;
@@ -92,10 +92,10 @@ export function useDeleteWebhook() {
 
   return useMutation({
     mutationFn: async (webhookId: string) => {
-      const { error } = await supabase
-        .from('webhooks')
+      const { error } = await (supabase
+        .from('webhooks' as any)
         .delete()
-        .eq('id', webhookId);
+        .eq('id', webhookId) as any);
 
       if (error) throw error;
     },
@@ -115,14 +115,14 @@ export function useCreateApiCredential() {
 
       const token = `pk_live_${crypto.randomUUID().replace(/-/g, '')}`;
 
-      const { data: credential, error } = await supabase
-        .from('api_credentials')
+      const { data: credential, error } = await (supabase
+        .from('api_credentials' as any)
         .insert({
           user_id: user.id,
           token,
-        })
+        } as any)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return credential as ApiCredential;
@@ -138,10 +138,10 @@ export function useRevokeApiCredential() {
 
   return useMutation({
     mutationFn: async (credentialId: string) => {
-      const { error } = await supabase
-        .from('api_credentials')
-        .update({ status: 'revoked' })
-        .eq('id', credentialId);
+      const { error } = await (supabase
+        .from('api_credentials' as any)
+        .update({ status: 'revoked' } as any)
+        .eq('id', credentialId) as any);
 
       if (error) throw error;
     },

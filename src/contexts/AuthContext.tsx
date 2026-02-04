@@ -42,11 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
+    const { data, error } = await (supabase
+      .from('profiles' as any)
       .select('*')
       .eq('id', userId)
-      .single();
+      .single() as any);
 
     if (error) {
       console.error('Error fetching profile:', error);
@@ -167,10 +167,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (data: Partial<Profile>) => {
     if (!user) return { error: 'Usuário não autenticado' };
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(data)
-      .eq('id', user.id);
+    const { error } = await (supabase
+      .from('profiles' as any)
+      .update(data as any)
+      .eq('id', user.id) as any);
 
     if (error) {
       return { error: error.message };

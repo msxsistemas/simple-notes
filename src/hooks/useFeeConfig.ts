@@ -19,10 +19,10 @@ export function useFeeConfig() {
   return useQuery({
     queryKey: ['fee_config', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('fee_configs')
+      const { data, error } = await (supabase
+        .from('fee_configs' as any)
         .select('*')
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return data as FeeConfig;

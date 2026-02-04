@@ -77,10 +77,10 @@ export default function SplitConfig() {
     if (!user) return;
     
     try {
-      const { error } = await supabase
-        .from('fee_configs')
-        .update({ split_enabled: !splitEnabled })
-        .eq('user_id', user.id);
+      const { error } = await (supabase
+        .from('fee_configs' as any)
+        .update({ split_enabled: !splitEnabled } as any)
+        .eq('user_id', user.id) as any);
 
       if (error) throw error;
 
