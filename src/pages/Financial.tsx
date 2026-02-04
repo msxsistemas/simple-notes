@@ -103,7 +103,11 @@ export default function Financial() {
   };
 
   const handleWithdraw = () => {
-    const amount = parseFloat(withdrawAmount);
+    if (!withdrawAmount || withdrawAmount.trim() === '') {
+      toast({ title: 'Erro', description: 'Informe o valor do saque', variant: 'destructive' });
+      return;
+    }
+    const amount = parseFloat(withdrawAmount.replace(',', '.'));
     if (isNaN(amount) || amount <= 0) {
       toast({ title: 'Erro', description: 'Valor inválido', variant: 'destructive' });
       return;
@@ -119,7 +123,7 @@ export default function Financial() {
     
     toast({ 
       title: 'Saque solicitado!', 
-      description: `Transferência de R$ ${amount.toFixed(2)} em processamento.` 
+      description: `Transferência de R$ ${amount.toFixed(2).replace('.', ',')} em processamento.` 
     });
     setIsWithdrawOpen(false);
     setWithdrawAmount('');
@@ -312,10 +316,14 @@ export default function Financial() {
                     <Label htmlFor="amount" className="text-foreground font-medium">Valor</Label>
                     <Input
                       id="amount"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="Valor"
                       value={withdrawAmount}
-                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.,]/g, '');
+                        setWithdrawAmount(value);
+                      }}
                       className="h-11"
                     />
                   </div>
@@ -359,7 +367,7 @@ export default function Financial() {
                     <p className="text-xs text-muted-foreground mb-1">Taxa de</p>
                     <p className="text-xs text-muted-foreground">Saque</p>
                     <p className="text-sm font-bold text-destructive mt-1">
-                      R$ {(feeConfig?.pix_out_fixed || 2).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {(feeConfig?.pix_out_fixed || 0.99).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="text-center p-3 border rounded-lg">
@@ -367,8 +375,9 @@ export default function Financial() {
                     <p className="text-xs text-muted-foreground">conta</p>
                     <p className="text-sm font-bold text-primary mt-1">
                       R$ {(() => {
-                        const amount = parseFloat(withdrawAmount) || 0;
-                        const fee = feeConfig?.pix_out_fixed || 2;
+                        if (!withdrawAmount || withdrawAmount.trim() === '') return '0,00';
+                        const amount = parseFloat(withdrawAmount.replace(',', '.')) || 0;
+                        const fee = feeConfig?.pix_out_fixed || 0.99;
                         if (amount <= 0) return '0,00';
                         return Math.max(0, amount - fee).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
                       })()}
