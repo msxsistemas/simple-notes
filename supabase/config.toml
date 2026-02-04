@@ -1,13 +1,1 @@
-project_id = "wkuwcuhqmeqnjppdfzla"
-
-[functions.create-pix-charge]
-verify_jwt = false
-
-[functions.create-pix-charge-public]
-verify_jwt = false
-
-[functions.woovi-webhook]
-verify_jwt = false
-
-[functions.woovi-subaccount]
-verify_jwt = false
+project_id = "mqsdkrmgsflisswrwkas"
