@@ -68,8 +68,9 @@ export default function Dashboard() {
         (m) => txDate >= m.monthStart && txDate < subMonths(m.monthStart, -1)
       );
       if (monthIndex !== -1) {
-        last6Months[monthIndex].sales += Number(tx.amount);
         if (tx.status === 'approved') {
+          // Faturamento deve contar apenas aprovadas
+          last6Months[monthIndex].sales += Number(tx.amount);
           last6Months[monthIndex].conversions += 1;
         }
       }
