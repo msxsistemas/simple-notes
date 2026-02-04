@@ -439,61 +439,6 @@ export default function Financial() {
         </div>
       </div>
 
-      {/* Withdrawal History */}
-      <Card className="border-border/50 mt-6">
-        <CardHeader>
-          <CardTitle>Histórico de Saques</CardTitle>
-          <CardDescription>Últimas transferências realizadas</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!withdrawals || withdrawals.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum saque realizado
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead>ID</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                  <TableHead className="text-right">Taxa</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {withdrawals.map((w) => (
-                  <TableRow key={w.id}>
-                    <TableCell className="font-mono text-sm">{w.id.substring(0, 8)}</TableCell>
-                    <TableCell>
-                      {new Date(w.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell>
-                      {w.status === 'completed' ? (
-                        <Badge className="bg-success/10 text-success hover:bg-success/20 gap-1">
-                          <CheckCircle className="h-3 w-3" />
-                          Concluído
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-warning/10 text-warning hover:bg-warning/20 gap-1">
-                          <Clock className="h-3 w-3" />
-                          {w.status === 'processing' ? 'Processando' : 'Pendente'}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      R$ {Number(w.amount).toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      R$ {Number(w.fee).toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
     </DashboardLayout>
   );
 }
