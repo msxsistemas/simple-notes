@@ -53,6 +53,7 @@ export default function Financial() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [pixKeyType, setPixKeyType] = useState('cpf');
   const [pixKey, setPixKey] = useState('');
+  const [formErrors, setFormErrors] = useState<{ amount?: string; pixKey?: string }>({});
   const { toast } = useToast();
 
   const { user, profile } = useAuth();
@@ -103,22 +104,30 @@ export default function Financial() {
   };
 
   const handleWithdraw = () => {
+    const errors: { amount?: string; pixKey?: string } = {};
+    
     if (!withdrawAmount || withdrawAmount.trim() === '') {
-      toast({ title: 'Erro', description: 'Informe o valor do saque', variant: 'destructive' });
-      return;
+      errors.amount = 'Informe o valor do saque';
+    } else {
+      const amount = parseFloat(withdrawAmount.replace(',', '.'));
+      if (isNaN(amount) || amount <= 0) {
+        errors.amount = 'Valor inválido';
+      } else if (amount > withdrawableBalance) {
+        errors.amount = 'Saldo insuficiente para o valor solicitado';
+      }
     }
-    const amount = parseFloat(withdrawAmount.replace(',', '.'));
-    if (isNaN(amount) || amount <= 0) {
-      toast({ title: 'Erro', description: 'Valor inválido', variant: 'destructive' });
-      return;
-    }
-    if (amount > withdrawableBalance) {
-      return; // A mensagem inline já está sendo exibida
-    }
+    
     if (!pixKey) {
-      toast({ title: 'Erro', description: 'Informe a chave PIX', variant: 'destructive' });
+      errors.pixKey = 'Informe a chave PIX';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
+    
+    setFormErrors({});
+    const amount = parseFloat(withdrawAmount.replace(',', '.'));
     
     toast({ 
       title: 'Saque solicitado!', 
@@ -322,14 +331,20 @@ export default function Financial() {
                       onChange={(e) => {
                         const value = e.target.value.replace(/[^0-9.,]/g, '');
                         setWithdrawAmount(value);
+                        if (formErrors.amount) setFormErrors(prev => ({ ...prev, amount: undefined }));
                       }}
                       className="h-11"
                     />
                     {(() => {
                       const inputAmount = parseFloat(withdrawAmount.replace(',', '.')) || 0;
-                      return inputAmount > withdrawableBalance && withdrawAmount.trim() !== '' ? (
-                        <p className="text-sm text-destructive">Saldo insuficiente para o valor solicitado</p>
-                      ) : null;
+                      const showInsufficientBalance = inputAmount > withdrawableBalance && withdrawAmount.trim() !== '';
+                      if (formErrors.amount) {
+                        return <p className="text-sm text-destructive">{formErrors.amount}</p>;
+                      }
+                      if (showInsufficientBalance) {
+                        return <p className="text-sm text-destructive">Saldo insuficiente para o valor solicitado</p>;
+                      }
+                      return null;
                     })()}
                   </div>
 
@@ -352,10 +367,16 @@ export default function Financial() {
                       id="pix"
                       placeholder={pixKeyType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
                       value={pixKey}
-                      onChange={handlePixKeyChange}
+                      onChange={(e) => {
+                        handlePixKeyChange(e);
+                        if (formErrors.pixKey) setFormErrors(prev => ({ ...prev, pixKey: undefined }));
+                      }}
                       className="h-11"
                       maxLength={pixKeyType === 'cpf' ? 14 : 18}
                     />
+                    {formErrors.pixKey && (
+                      <p className="text-sm text-destructive">{formErrors.pixKey}</p>
+                    )}
                   </div>
                 </div>
 
