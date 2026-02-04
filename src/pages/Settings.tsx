@@ -104,26 +104,6 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Appearance */}
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-primary" />
-              Aparência
-            </CardTitle>
-            <CardDescription>Personalize a interface do sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Modo Escuro</p>
-                <p className="text-sm text-muted-foreground">Tema escuro para o dashboard</p>
-              </div>
-              <Switch />
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Save Button */}
         <div className="flex justify-end">
           <Button onClick={handleSave} className="gradient-primary">
