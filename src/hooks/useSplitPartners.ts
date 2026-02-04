@@ -184,9 +184,11 @@ export function useCreateSplitPartner() {
           console.error('Error creating Woovi subaccount:', subaccountError);
         } else if (subaccountResult?.success && subaccountResult?.data) {
           // Woovi returns subAccount with the pixKey as identifier
+          // The pixKey serves as the subaccount identifier in Woovi's system
           const subAccount = subaccountResult.data.subAccount || subaccountResult.data;
-          wooviSubaccountId = subAccount?.subaccountId || subAccount?.id || subAccount?.pixKey || null;
-          console.log('Woovi subaccount created:', wooviSubaccountId, subaccountResult.data);
+          // Use pixKey as the subaccount ID since Woovi uses it as the identifier
+          wooviSubaccountId = subAccount?.subaccountId || subAccount?.id || data.pix_key;
+          console.log('Woovi subaccount created, using ID:', wooviSubaccountId, subaccountResult.data);
         } else if (subaccountResult?.error) {
           console.warn('Woovi subaccount creation warning:', subaccountResult.error);
         }
