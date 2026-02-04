@@ -49,17 +49,6 @@ const getStatusText = (status: string) => {
   }
 };
 
-const chartData = [
-  { month: 'Jul', value: 0 },
-  { month: 'Aug', value: 0 },
-  { month: 'Sep', value: 0 },
-  { month: 'Oct', value: 200 },
-  { month: 'Nov', value: 350 },
-  { month: 'Dec', value: 280 },
-  { month: 'Jan', value: 1553 },
-  { month: 'Feb', value: 400 },
-];
-
 export default function Reports() {
   const [periodFilter, setPeriodFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
@@ -70,6 +59,32 @@ export default function Reports() {
 
   const { data: transactions, isLoading: transactionsLoading } = useTransactions();
   const { data: stats } = useTransactionStats();
+
+  // Gráfico deve refletir faturamento real (apenas aprovadas)
+  const performanceChartData = useMemo(() => {
+    const source = transactions || [];
+    const now = new Date();
+
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const label = d.toLocaleString('pt-BR', { month: 'short' });
+      return {
+        month: label.charAt(0).toUpperCase() + label.slice(1),
+        monthKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        value: 0,
+      };
+    });
+
+    for (const tx of source) {
+      if (tx.status !== 'approved') continue;
+      const d = new Date(tx.created_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const idx = months.findIndex((m) => m.monthKey === key);
+      if (idx !== -1) months[idx].value += Number(tx.amount);
+    }
+
+    return months.map(({ month, value }) => ({ month, value }));
+  }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
     return (transactions || []).filter((tx) => {
@@ -138,7 +153,7 @@ export default function Reports() {
             <CardContent>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} barCategoryGap="25%">
+                  <BarChart data={performanceChartData} barCategoryGap="25%">
                     <XAxis 
                       dataKey="month" 
                       axisLine={false} 
@@ -162,7 +177,7 @@ export default function Reports() {
                       }}
                     />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                      {chartData.map((entry, index) => (
+                      {performanceChartData.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.value > 0 ? '#22c55e' : '#e2e8f0'}
