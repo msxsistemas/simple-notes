@@ -348,7 +348,7 @@ export default function Integrations() {
               {/* Webhook Payload Example */}
               <div className="mt-6 p-4 rounded-lg bg-muted/50">
                 <h4 className="font-medium mb-2">Exemplo de Payload</h4>
-                <pre className="text-xs overflow-x-auto p-3 rounded bg-sidebar-background text-sidebar-foreground">
+                <pre className="text-xs overflow-x-auto p-3 rounded bg-zinc-900 text-zinc-100">
 {`{
   "event": "payment_approved",
   "data": {
