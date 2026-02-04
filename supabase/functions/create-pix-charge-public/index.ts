@@ -82,13 +82,9 @@ interface WooviChargeResponse {
 }
 
 // Calculate splits for Woovi API
-// Woovi charges ~1.29% on PIX - we need to reserve this from the split amount
+// Woovi cobra 1.40% ou R$0.80 (o maior) - calculamos o valor exato para a subconta
 function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSplit[] {
   const splits: WooviSplit[] = [];
-  
-  // Woovi fee is ~1.29%, we reserve 2% to be safe
-  const wooviFeeReserve = 0.02;
-  const maxSplitableAmount = amountCents * (1 - wooviFeeReserve);
   
   for (const partner of partners) {
     if (partner.status !== 'active') continue;
@@ -96,15 +92,11 @@ function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSp
     let splitValueCents: number;
     
     if (partner.split_type === 'percentage') {
-      // Calculate the percentage of the splitable amount (after Woovi fee reserve)
-      splitValueCents = Math.floor(maxSplitableAmount * (partner.split_value / 100));
+      // Usa o percentual definido diretamente sobre o valor total
+      splitValueCents = Math.round(amountCents * (partner.split_value / 100));
     } else {
+      // Valor fixo em centavos
       splitValueCents = Math.round(partner.split_value * 100);
-    }
-    
-    // Ensure split doesn't exceed max splitable amount
-    if (splitValueCents > maxSplitableAmount) {
-      splitValueCents = Math.floor(maxSplitableAmount);
     }
     
     if (splitValueCents > 0) {
@@ -113,10 +105,11 @@ function calculateSplits(partners: SplitPartner[], amountCents: number): WooviSp
         value: splitValueCents,
         splitType: 'SPLIT_SUB_ACCOUNT',
       });
+      console.log(`Split para ${partner.pix_key}: R$ ${(splitValueCents / 100).toFixed(2)} (${partner.split_value}${partner.split_type === 'percentage' ? '%' : ' fixo'})`);
     }
   }
   
-  console.log(`Split: total=${amountCents}c, maxSplitable=${Math.floor(maxSplitableAmount)}c, splits=${JSON.stringify(splits)}`);
+  console.log(`Split total: ${amountCents}c, splits=${JSON.stringify(splits)}`);
   
   return splits;
 }
