@@ -63,9 +63,8 @@ export function useTransactionStats() {
       };
 
       transactions.forEach((t) => {
-        stats.total_revenue += Number(t.amount);
-        
         if (t.status === 'approved') {
+          stats.total_revenue += Number(t.amount);
           stats.approved_amount += Number(t.net_amount);
           stats.approved_count++;
         } else if (t.status === 'pending') {
