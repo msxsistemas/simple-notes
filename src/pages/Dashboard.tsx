@@ -160,7 +160,7 @@ export default function Dashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
+                  <p className="text-sm text-muted-foreground font-bold">{stat.title}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
                 </div>
                 {stat.hasBorder ? (

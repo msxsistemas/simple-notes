@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileText, DollarSign, ShoppingCart, TrendingUp, XCircle, Loader2, Calendar } from 'lucide-react';
+import { FileText, DollarSign, ShoppingCart, ThumbsUp, XCircle, Loader2, Calendar } from 'lucide-react';
 import { useTransactions, useTransactionStats } from '@/hooks/useTransactions';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { TablePagination } from '@/components/ui/table-pagination';
@@ -229,7 +229,7 @@ export default function Reports() {
                 <CardContent className="p-5">
                   <div className="flex items-center gap-3">
                     <div className="h-7 w-7 flex items-center justify-center">
-                      <TrendingUp className="h-6 w-6 text-success" strokeWidth={1.5} />
+                      <ThumbsUp className="h-6 w-6 text-success" strokeWidth={1.5} />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground font-bold">Taxa de Conversão</p>
