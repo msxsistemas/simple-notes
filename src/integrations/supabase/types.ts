@@ -109,6 +109,62 @@ export type Database = {
           },
         ]
       }
+      pix_charges: {
+        Row: {
+          amount: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          paid_at: string | null
+          pix_code: string | null
+          qr_code_base64: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+          woovi_charge_id: string | null
+          woovi_correlation_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          paid_at?: string | null
+          pix_code?: string | null
+          qr_code_base64?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+          woovi_charge_id?: string | null
+          woovi_correlation_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          paid_at?: string | null
+          pix_code?: string | null
+          qr_code_base64?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+          woovi_charge_id?: string | null
+          woovi_correlation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pix_charges_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           checkout_url: string | null
