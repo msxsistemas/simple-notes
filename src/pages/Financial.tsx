@@ -14,12 +14,15 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
@@ -35,6 +38,8 @@ import {
   Clock,
   CheckCircle,
   Loader2,
+  Info,
+  X,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTransactionStats } from '@/hooks/useTransactions';
@@ -46,6 +51,7 @@ import { Link } from 'react-router-dom';
 export default function Financial() {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [pixKeyType, setPixKeyType] = useState('cpf');
   const [pixKey, setPixKey] = useState('');
   const { toast } = useToast();
 
@@ -243,45 +249,111 @@ export default function Financial() {
                 Sacar
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Solicitar Saque PIX</DialogTitle>
-                <DialogDescription>
-                  O valor será transferido em até 24 horas úteis.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Valor do saque</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="0,00"
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Taxa de saque: R$ {feeConfig?.pix_out_fixed?.toFixed(2) || '2,00'}
+            <DialogContent className="p-0 gap-0 overflow-hidden max-w-md">
+              {/* Header Verde */}
+              <div className="bg-primary px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-primary-foreground">Solicitar saque</h2>
+                <button 
+                  onClick={() => setIsWithdrawOpen(false)}
+                  className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Info Banner */}
+                <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                  <Info className="h-5 w-5 text-primary shrink-0" />
+                  <p className="text-sm text-foreground">
+                    O seu saque é processado em apenas alguns minutos!
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pix">Chave PIX</Label>
-                  <Input
-                    id="pix"
-                    placeholder="E-mail, CPF, telefone ou chave aleatória"
-                    value={pixKey}
-                    onChange={(e) => setPixKey(e.target.value)}
-                  />
+
+                {/* Form Fields */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="amount" className="text-foreground font-medium">Valor</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      placeholder="Valor"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-foreground font-medium">Tipo de Chave</Label>
+                    <Select value={pixKeyType} onValueChange={setPixKeyType}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cpf">CPF</SelectItem>
+                        <SelectItem value="cnpj">CNPJ</SelectItem>
+                        <SelectItem value="email">E-mail</SelectItem>
+                        <SelectItem value="phone">Telefone</SelectItem>
+                        <SelectItem value="random">Chave Aleatória</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="pix" className="text-foreground font-medium">Chave PIX:</Label>
+                    <Input
+                      id="pix"
+                      placeholder={pixKeyType === 'cpf' ? 'CPF/CNPJ' : pixKeyType === 'email' ? 'email@exemplo.com' : pixKeyType === 'phone' ? '(00) 00000-0000' : 'Chave PIX'}
+                      value={pixKey}
+                      onChange={(e) => setPixKey(e.target.value)}
+                      className="h-11"
+                    />
+                  </div>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-3 gap-3 pt-2">
+                  <div className="text-center p-3 border rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Disponível para</p>
+                    <p className="text-xs text-muted-foreground">Saque</p>
+                    <p className="text-sm font-bold text-success mt-1">
+                      R$ {withdrawableBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div className="text-center p-3 border rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Taxa de</p>
+                    <p className="text-xs text-muted-foreground">Saque</p>
+                    <p className="text-sm font-bold text-destructive mt-1">
+                      R$ {(feeConfig?.pix_out_fixed || 0.99).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div className="text-center p-3 border rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">Valor a receber na</p>
+                    <p className="text-xs text-muted-foreground">conta</p>
+                    <p className="text-sm font-bold text-primary mt-1">
+                      R$ {Math.max(0, (parseFloat(withdrawAmount) || 0) - (feeConfig?.pix_out_fixed || 0.99)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsWithdrawOpen(false)}
+                    className="flex-1 h-11"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleWithdraw} 
+                    className="flex-1 h-11 bg-success hover:bg-success/90"
+                  >
+                    Solicitar
+                  </Button>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsWithdrawOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleWithdraw} className="gradient-primary">
-                  Confirmar Saque
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
