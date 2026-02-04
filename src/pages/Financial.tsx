@@ -326,6 +326,12 @@ export default function Financial() {
                       }}
                       className="h-11"
                     />
+                    {(() => {
+                      const inputAmount = parseFloat(withdrawAmount.replace(',', '.')) || 0;
+                      return inputAmount > withdrawableBalance && withdrawAmount.trim() !== '' ? (
+                        <p className="text-sm text-muted-foreground">Saldo insuficiente para o valor solicitado</p>
+                      ) : null;
+                    })()}
                   </div>
 
                   <div className="space-y-2">
