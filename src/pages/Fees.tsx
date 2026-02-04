@@ -18,11 +18,8 @@ const fees = [
     icon: ArrowUpRight,
     iconColor: 'text-success',
     borderColor: 'border-success',
-    details: [
-      { label: 'Taxa percentual', value: '1,40%' },
-      { label: 'Taxa mínima', value: 'R$ 0,80' },
-      { label: 'Regra aplicada', value: 'O maior valor' },
-    ],
+    feeText: '1,40% ou R$ 0,80',
+    feeNote: 'o que for maior',
   },
   {
     title: 'PIX Saída',
@@ -31,9 +28,8 @@ const fees = [
     icon: ArrowDownRight,
     iconColor: 'text-primary',
     borderColor: 'border-primary',
-    details: [
-      { label: 'Taxa fixa', value: 'R$ 2,00' },
-    ],
+    feeText: 'R$ 2,00',
+    feeNote: 'taxa fixa',
   },
 ];
 
@@ -76,15 +72,9 @@ export default function Fees() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">{fee.description}</p>
-              <div className="space-y-3">
-                {fee.details.map((detail) => (
-                  <div key={detail.label} className="flex justify-between items-center py-2 border-b border-border/30 last:border-0">
-                    <span className="text-sm text-muted-foreground">{detail.label}</span>
-                    <Badge variant="secondary" className="font-bold text-sm px-3 py-1">
-                      {detail.value}
-                    </Badge>
-                  </div>
-                ))}
+              <div className="p-4 bg-muted/30 rounded-lg border border-border/30 text-center">
+                <p className="text-2xl font-bold">{fee.feeText}</p>
+                <p className="text-sm text-muted-foreground mt-1">{fee.feeNote}</p>
               </div>
             </CardContent>
           </Card>
