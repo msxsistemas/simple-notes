@@ -162,20 +162,9 @@ export default function Financial() {
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold uppercase truncate">
+                <h2 className="text-lg font-bold uppercase truncate mb-4">
                   {profile?.full_name || 'Nome do Usuário'}
                 </h2>
-                <p className="text-sm text-muted-foreground mb-3">Seller</p>
-
-                {/* Suporte Button */}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-2 border-primary text-primary hover:bg-primary/10 mb-4"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Suporte
-                </Button>
 
                 {/* Details */}
                 <div className="space-y-2 text-sm">
