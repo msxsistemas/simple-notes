@@ -11,71 +11,76 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
+// Base URL real do projeto
+const BASE_URL = 'https://evxmwxgcfelrwikddlfa.supabase.co/functions/v1';
+
 const endpoints = [
   {
     method: 'POST',
-    path: '/v1/charges',
-    description: 'Criar uma nova cobrança PIX',
+    path: '/create-pix-charge-public',
+    description: 'Criar uma nova cobrança PIX (checkout público)',
     request: `{
-  "value": 150.00,
-  "order_id": "ORD-12345",
+  "productId": "uuid-do-produto",
+  "customerName": "João Silva",
+  "customerEmail": "joao@email.com",
+  "customerPhone": "11999999999",
+  "customerDocument": "12345678900"
+}`,
+    response: `{
+  "success": true,
+  "pixCode": "00020126580014br.gov.bcb.pix...",
+  "qrCodeBase64": "data:image/png;base64,...",
+  "expiresAt": "2024-01-15T12:00:00Z",
+  "chargeId": "uuid-da-cobranca"
+}`,
+  },
+  {
+    method: 'POST',
+    path: '/create-pix-charge',
+    description: 'Criar cobrança PIX (requer autenticação)',
+    request: `{
+  "amount": 150.00,
+  "description": "Pagamento do pedido #12345",
   "customer": {
     "name": "João Silva",
     "email": "joao@email.com",
     "phone": "11999999999"
-  },
-  "expires_in": 3600
-}`,
-    response: `{
-  "id": "CHG-001",
-  "status": "pending",
-  "value": 150.00,
-  "pix_code": "00020126...",
-  "qr_code_url": "https://api.pixpay.com/qr/CHG-001",
-  "expires_at": "2024-01-15T12:00:00Z"
-}`,
-  },
-  {
-    method: 'GET',
-    path: '/v1/charges/:id',
-    description: 'Consultar status de uma cobrança',
-    request: null,
-    response: `{
-  "id": "CHG-001",
-  "status": "approved",
-  "value": 150.00,
-  "paid_at": "2024-01-15T10:35:00Z",
-  "customer": {
-    "name": "João Silva",
-    "email": "joao@email.com"
   }
 }`,
-  },
-  {
-    method: 'GET',
-    path: '/v1/balance',
-    description: 'Consultar saldo disponível',
-    request: null,
     response: `{
-  "available": 12450.00,
-  "pending": 3250.00
+  "success": true,
+  "chargeId": "uuid-da-cobranca",
+  "pixCode": "00020126580014br.gov.bcb.pix...",
+  "qrCodeBase64": "data:image/png;base64,...",
+  "expiresAt": "2024-01-15T12:00:00Z"
 }`,
   },
   {
     method: 'POST',
-    path: '/v1/withdrawals',
-    description: 'Solicitar saque via PIX',
+    path: '/woovi-webhook',
+    description: 'Endpoint para receber webhooks da Woovi',
     request: `{
-  "amount": 1000.00,
-  "pix_key": "joao@email.com"
+  "event": "OPENPIX:CHARGE_COMPLETED",
+  "charge": {
+    "correlationID": "uuid-correlation",
+    "value": 15000,
+    "status": "COMPLETED"
+  }
 }`,
     response: `{
-  "id": "WDL-001",
-  "status": "processing",
-  "amount": 1000.00,
-  "fee": 2.00,
-  "net_amount": 998.00,
-  "estimated_at": "2024-01-16T18:00:00Z"
+  "success": true
+}`,
+  },
+  {
+    method: 'POST',
+    path: '/woovi-subaccount',
+    description: 'Criar subconta para split de pagamentos',
+    request: `{
+  "partnerId": "uuid-do-parceiro"
+}`,
+    response: `{
+  "success": true,
+  "subaccountId": "woovi-subaccount-id"
 }`,
   },
 ];
@@ -111,11 +116,17 @@ export default function Docs() {
                 <p className="text-muted-foreground mb-4">
                   Integre pagamentos PIX à sua aplicação de forma simples e segura.
                 </p>
-                <div className="flex items-center gap-4 text-sm">
+                <div className="flex flex-col gap-2 text-sm">
                   <div>
                     <span className="text-muted-foreground">Base URL:</span>
-                    <code className="ml-2 px-2 py-1 rounded bg-muted font-mono">
-                      https://api.pixpay.com
+                    <code className="ml-2 px-2 py-1 rounded bg-muted font-mono text-xs">
+                      {BASE_URL}
+                    </code>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Checkout Público:</span>
+                    <code className="ml-2 px-2 py-1 rounded bg-muted font-mono text-xs">
+                      https://id-preview--f6f5871a-d89b-454a-ae1d-79dfaefd329b.lovable.app/pay?product=ID_DO_PRODUTO
                     </code>
                   </div>
                 </div>
@@ -196,18 +207,32 @@ export default function Docs() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg bg-muted/50">
-                  <h4 className="text-sm font-medium mb-2">Header de autenticação</h4>
+                  <h4 className="text-sm font-medium mb-2">Header de autenticação (para endpoints autenticados)</h4>
                   <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground">
-{`Authorization: Bearer pk_live_sua_chave_aqui`}
+{`Authorization: Bearer SEU_TOKEN_SUPABASE`}
                   </pre>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50">
-                  <h4 className="text-sm font-medium mb-2">Exemplo com cURL</h4>
+                  <h4 className="text-sm font-medium mb-2">Exemplo: Criar cobrança PIX pública</h4>
                   <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground overflow-x-auto">
-{`curl -X POST https://api.pixpay.com/v1/charges \\
-  -H "Authorization: Bearer pk_live_sua_chave_aqui" \\
+{`curl -X POST ${BASE_URL}/create-pix-charge-public \\
   -H "Content-Type: application/json" \\
-  -d '{"value": 150.00, "order_id": "ORD-123"}'`}
+  -d '{
+    "productId": "uuid-do-produto",
+    "customerName": "João Silva",
+    "customerEmail": "joao@email.com",
+    "customerPhone": "11999999999",
+    "customerDocument": "12345678900"
+  }'`}
+                  </pre>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/50">
+                  <h4 className="text-sm font-medium mb-2">Exemplo: Checkout via URL (mais simples)</h4>
+                  <pre className="text-xs p-4 rounded-lg bg-sidebar-background text-sidebar-foreground overflow-x-auto">
+{`// Redirecione o usuário para:
+https://id-preview--f6f5871a-d89b-454a-ae1d-79dfaefd329b.lovable.app/pay?product=UUID_DO_PRODUTO
+
+// Substitua UUID_DO_PRODUTO pelo ID real do produto cadastrado`}
                   </pre>
                 </div>
                 <p className="text-sm text-muted-foreground">
