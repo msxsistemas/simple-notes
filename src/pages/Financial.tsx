@@ -66,6 +66,42 @@ export default function Financial() {
   const pendingAmount = stats?.pending_amount || 0;
   const withdrawableBalance = availableBalance;
 
+  // Função para formatar CPF: 000.000.000-00
+  const formatCPF = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    return digits
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  };
+
+  // Função para formatar CNPJ: 00.000.000/0000-00
+  const formatCNPJ = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 14);
+    return digits
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+  };
+
+  const handlePixKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (pixKeyType === 'cpf') {
+      setPixKey(formatCPF(value));
+    } else if (pixKeyType === 'cnpj') {
+      setPixKey(formatCNPJ(value));
+    } else {
+      setPixKey(value);
+    }
+  };
+
+  // Limpar campo ao trocar tipo de chave
+  const handlePixKeyTypeChange = (value: string) => {
+    setPixKeyType(value);
+    setPixKey('');
+  };
+
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0) {
@@ -286,7 +322,7 @@ export default function Financial() {
 
                   <div className="space-y-2">
                     <Label className="text-foreground font-medium">Tipo de Chave</Label>
-                    <Select value={pixKeyType} onValueChange={setPixKeyType}>
+                    <Select value={pixKeyType} onValueChange={handlePixKeyTypeChange}>
                       <SelectTrigger className="h-11">
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
@@ -301,10 +337,11 @@ export default function Financial() {
                     <Label htmlFor="pix" className="text-foreground font-medium">Chave PIX:</Label>
                     <Input
                       id="pix"
-                      placeholder="Chave PIX"
+                      placeholder={pixKeyType === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'}
                       value={pixKey}
-                      onChange={(e) => setPixKey(e.target.value)}
+                      onChange={handlePixKeyChange}
                       className="h-11"
+                      maxLength={pixKeyType === 'cpf' ? 14 : 18}
                     />
                   </div>
                 </div>
