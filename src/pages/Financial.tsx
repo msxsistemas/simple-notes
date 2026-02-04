@@ -373,14 +373,19 @@ export default function Financial() {
                   <div className="text-center p-3 border rounded-lg">
                     <p className="text-xs text-muted-foreground mb-1">Valor a receber na</p>
                     <p className="text-xs text-muted-foreground">conta</p>
-                    <p className="text-sm font-bold text-primary mt-1">
+                    <p className={`text-sm font-bold mt-1 ${(() => {
+                      const inputAmount = parseFloat(withdrawAmount.replace(',', '.')) || 0;
+                      return inputAmount > withdrawableBalance ? 'text-destructive' : 'text-primary';
+                    })()}`}>
                       R$ {(() => {
                         const fee = feeConfig?.pix_out_fixed || 0.99;
-                        const amountToUse = (!withdrawAmount || withdrawAmount.trim() === '') 
+                        const inputAmount = (!withdrawAmount || withdrawAmount.trim() === '') 
                           ? withdrawableBalance 
                           : parseFloat(withdrawAmount.replace(',', '.')) || 0;
-                        if (amountToUse <= 0) return '0,00';
-                        return Math.max(0, amountToUse - fee).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                        if (inputAmount <= 0) return '0,00';
+                        // Cap at available balance
+                        const cappedAmount = Math.min(inputAmount, withdrawableBalance);
+                        return Math.max(0, cappedAmount - fee).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
                       })()}
                     </p>
                   </div>
