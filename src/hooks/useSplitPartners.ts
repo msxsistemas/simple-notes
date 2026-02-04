@@ -63,10 +63,10 @@ export function useSplitPartners() {
   return useQuery({
     queryKey: ['split_partners', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('split_partners')
+      const { data, error } = await (supabase
+        .from('split_partners' as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as SplitPartner[];
@@ -81,11 +81,11 @@ export function useActiveSplitPartners() {
   return useQuery({
     queryKey: ['split_partners_active', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('split_partners')
+      const { data, error } = await (supabase
+        .from('split_partners' as any)
         .select('*')
         .eq('status', 'active')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as SplitPartner[];
@@ -128,15 +128,15 @@ export function useCreateSplitPartner() {
       }
 
       // Create the partner in the database
-      const { data: partner, error } = await supabase
-        .from('split_partners')
+      const { data: partner, error } = await (supabase
+        .from('split_partners' as any)
         .insert({
           ...data,
           user_id: user.id,
           woovi_subaccount_id: wooviSubaccountId,
-        })
+        } as any)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return { 
@@ -156,12 +156,12 @@ export function useUpdateSplitPartner() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: UpdateSplitPartnerData) => {
-      const { data: partner, error } = await supabase
-        .from('split_partners')
-        .update(data)
+      const { data: partner, error } = await (supabase
+        .from('split_partners' as any)
+        .update(data as any)
         .eq('id', id)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return partner as SplitPartner;
@@ -179,11 +179,11 @@ export function useDeleteSplitPartner() {
   return useMutation({
     mutationFn: async (id: string) => {
       // First, get the partner to check for woovi_subaccount_id
-      const { data: partner, error: fetchError } = await supabase
-        .from('split_partners')
+      const { data: partner, error: fetchError } = await (supabase
+        .from('split_partners' as any)
         .select('woovi_subaccount_id')
         .eq('id', id)
-        .single();
+        .single() as any);
 
       if (fetchError) throw fetchError;
 
@@ -204,10 +204,10 @@ export function useDeleteSplitPartner() {
       }
 
       // Delete from database
-      const { error } = await supabase
-        .from('split_partners')
+      const { error } = await (supabase
+        .from('split_partners' as any)
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
 
       if (error) throw error;
     },

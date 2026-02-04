@@ -26,10 +26,10 @@ export function useTransactions() {
   return useQuery({
     queryKey: ['transactions', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
+      const { data, error } = await (supabase
+        .from('transactions' as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
       return data as Transaction[];
@@ -44,9 +44,9 @@ export function useTransactionStats() {
   return useQuery({
     queryKey: ['transaction_stats', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('status, amount, net_amount');
+      const { data, error } = await (supabase
+        .from('transactions' as any)
+        .select('status, amount, net_amount') as any);
 
       if (error) throw error;
 
