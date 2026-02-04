@@ -58,8 +58,7 @@ const endpoints = [
     request: null,
     response: `{
   "available": 12450.00,
-  "pending": 3250.00,
-  "reserved": 500.00
+  "pending": 3250.00
 }`,
   },
   {
