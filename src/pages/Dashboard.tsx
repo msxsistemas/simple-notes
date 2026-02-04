@@ -106,38 +106,32 @@ export default function Dashboard() {
     {
       title: 'Saldo Disponível',
       value: formatCurrency(availableBalance),
-      change: '',
-      trend: 'up' as const,
       icon: Wallet,
+      hasBorder: true,
       color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      borderColor: 'border-primary',
     },
     {
       title: 'Faturamento Total',
       value: formatCurrency(totalRevenue),
-      change: '',
-      trend: 'up' as const,
       icon: DollarSign,
+      hasBorder: true,
       color: 'text-success',
-      bgColor: 'bg-success/10',
+      borderColor: 'border-success',
     },
     {
       title: 'Vendas Aprovadas',
       value: approvedCount.toString(),
-      change: '',
-      trend: 'up' as const,
       icon: ShoppingCart,
-      color: 'text-chart-4',
-      bgColor: 'bg-chart-4/10',
+      hasBorder: false,
+      color: 'text-success',
     },
     {
       title: 'Taxa de Conversão',
       value: `${conversionRate}%`,
-      change: '',
-      trend: conversionRate >= 50 ? 'up' as const : 'down' as const,
       icon: TrendingUp,
-      color: 'text-warning',
-      bgColor: 'bg-warning/10',
+      hasBorder: false,
+      color: 'text-success',
     },
   ];
 
@@ -169,9 +163,15 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
                 </div>
-                <div className={`${stat.bgColor} p-3 rounded-xl`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
+                {stat.hasBorder ? (
+                  <div className={`h-7 w-7 flex items-center justify-center border-2 ${stat.borderColor} rounded-full`}>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} strokeWidth={1.5} />
+                  </div>
+                ) : (
+                  <div className="h-7 w-7 flex items-center justify-center">
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} strokeWidth={1.5} />
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
