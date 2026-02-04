@@ -27,7 +27,7 @@ import {
   ArrowUpRight, 
   Clock, 
   ShieldAlert, 
-  Landmark,
+  
   Plus,
   CheckCircle,
   Loader2,
@@ -51,9 +51,7 @@ export default function Financial() {
 
   const availableBalance = stats?.approved_amount || 0;
   const pendingAmount = stats?.pending_amount || 0;
-  const reservePercentage = feeConfig?.reserve_percentage || 5;
-  const reserveAmount = (availableBalance * reservePercentage) / 100;
-  const withdrawableBalance = availableBalance - reserveAmount;
+  const withdrawableBalance = availableBalance;
 
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
@@ -103,14 +101,6 @@ export default function Financial() {
       color: 'text-destructive',
       bgColor: 'bg-destructive/10',
       description: 'Disputas em aberto',
-    },
-    {
-      title: 'Reserva Financeira',
-      value: reserveAmount,
-      icon: Landmark,
-      color: 'text-muted-foreground',
-      bgColor: 'bg-muted',
-      description: `${reservePercentage}% de segurança`,
     },
   ];
 

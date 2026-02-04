@@ -5,7 +5,7 @@ import {
   Percent, 
   ArrowUpRight, 
   ArrowDownRight, 
-  ShieldCheck,
+  
   Landmark,
 } from 'lucide-react';
 
@@ -30,17 +30,6 @@ const fees = [
     iconBg: 'bg-primary/10',
     details: [
       { label: 'Taxa fixa', value: 'R$ 2,00' },
-    ],
-  },
-  {
-    title: 'Reserva Financeira',
-    description: 'Percentual retido como garantia',
-    icon: ShieldCheck,
-    iconColor: 'text-warning',
-    iconBg: 'bg-warning/10',
-    details: [
-      { label: 'Percentual', value: '5%' },
-      { label: 'Período de retenção', value: '30 dias' },
     ],
   },
 ];
@@ -130,14 +119,13 @@ export default function Fees() {
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
             <div className="bg-primary/10 p-3 rounded-xl">
-              <ShieldCheck className="h-6 w-6 text-primary" />
+              <Percent className="h-6 w-6 text-primary" />
             </div>
             <div>
               <h4 className="font-semibold mb-1">Sobre as taxas</h4>
               <p className="text-sm text-muted-foreground">
                 A taxa de PIX entrada é calculada como <strong>1,40% OU R$ 0,80</strong> — o que for <strong>maior</strong>. 
-                Exemplo: para R$ 50,00 a taxa seria R$ 0,80 (mínimo), para R$ 100,00 seria R$ 1,40 (percentual). 
-                A reserva financeira é liberada após o período de retenção, servindo como proteção contra chargebacks e disputas.
+                Exemplo: para R$ 50,00 a taxa seria R$ 0,80 (mínimo), para R$ 100,00 seria R$ 1,40 (percentual).
               </p>
             </div>
           </div>

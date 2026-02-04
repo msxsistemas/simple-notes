@@ -92,7 +92,6 @@ export interface DashboardStats {
   total_revenue: number;
   total_approved_sales: number;
   pending_amount: number;
-  reserve_amount: number;
 }
 
 // Chart data
@@ -107,6 +106,5 @@ export interface FeeConfig {
   pix_in_percentage: number;
   pix_in_fixed: number;
   pix_out_fixed: number;
-  reserve_percentage: number;
   max_pix_transaction: number;
 }
