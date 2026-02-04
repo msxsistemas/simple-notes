@@ -113,8 +113,7 @@ export default function Financial() {
       return;
     }
     if (amount > withdrawableBalance) {
-      toast({ title: 'Erro', description: 'Saldo insuficiente', variant: 'destructive' });
-      return;
+      return; // A mensagem inline já está sendo exibida
     }
     if (!pixKey) {
       toast({ title: 'Erro', description: 'Informe a chave PIX', variant: 'destructive' });
@@ -329,7 +328,7 @@ export default function Financial() {
                     {(() => {
                       const inputAmount = parseFloat(withdrawAmount.replace(',', '.')) || 0;
                       return inputAmount > withdrawableBalance && withdrawAmount.trim() !== '' ? (
-                        <p className="text-sm text-muted-foreground">Saldo insuficiente para o valor solicitado</p>
+                        <p className="text-sm text-destructive">Saldo insuficiente para o valor solicitado</p>
                       ) : null;
                     })()}
                   </div>
