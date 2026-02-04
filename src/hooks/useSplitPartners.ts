@@ -7,6 +7,8 @@ export interface SplitPartner {
   user_id: string;
   name: string;
   pix_key: string;
+  document: string | null;
+  email: string | null;
   split_type: 'percentage' | 'fixed';
   split_value: number;
   status: 'active' | 'inactive';
@@ -18,6 +20,8 @@ export interface SplitPartner {
 export interface CreateSplitPartnerData {
   name: string;
   pix_key: string;
+  document?: string;
+  email?: string;
   split_type: 'percentage' | 'fixed';
   split_value: number;
 }
@@ -26,6 +30,8 @@ export interface UpdateSplitPartnerData {
   id: string;
   name?: string;
   pix_key?: string;
+  document?: string;
+  email?: string;
   split_type?: 'percentage' | 'fixed';
   split_value?: number;
   status?: 'active' | 'inactive';

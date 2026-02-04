@@ -41,6 +41,8 @@ import {
   ToggleLeft,
   CheckCircle2,
   XCircle,
+  Mail,
+  FileText,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFeeConfig } from '@/hooks/useFeeConfig';
@@ -58,6 +60,8 @@ export default function SplitConfig() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [name, setName] = useState('');
   const [pixKey, setPixKey] = useState('');
+  const [document, setDocument] = useState('');
+  const [email, setEmail] = useState('');
   const [splitType, setSplitType] = useState<'percentage' | 'fixed'>('percentage');
   const [splitValue, setSplitValue] = useState('');
   const { toast } = useToast();
@@ -121,6 +125,8 @@ export default function SplitConfig() {
       const result = await createPartner.mutateAsync({
         name,
         pix_key: pixKey,
+        document: document || undefined,
+        email: email || undefined,
         split_type: splitType,
         split_value: value,
       });
@@ -168,6 +174,8 @@ export default function SplitConfig() {
   const resetForm = () => {
     setName('');
     setPixKey('');
+    setDocument('');
+    setEmail('');
     setSplitType('percentage');
     setSplitValue('');
   };
@@ -291,27 +299,51 @@ export default function SplitConfig() {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nome do Parceiro *</Label>
+                    <Input
+                      id="name"
+                      placeholder="Ex: João Silva"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="document">CPF/CNPJ</Label>
+                    <Input
+                      id="document"
+                      placeholder="000.000.000-00"
+                      value={document}
+                      onChange={(e) => setDocument(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome do Parceiro</Label>
+                  <Label htmlFor="email">E-mail</Label>
                   <Input
-                    id="name"
-                    placeholder="Ex: João Silva"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="parceiro@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pixKey">Chave PIX</Label>
+                  <Label htmlFor="pixKey">Chave PIX *</Label>
                   <Input
                     id="pixKey"
                     placeholder="CPF, E-mail, telefone ou chave aleatória"
                     value={pixKey}
                     onChange={(e) => setPixKey(e.target.value)}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    A chave PIX deve estar cadastrada no Banco Central (DICT) para criar a subconta na Woovi
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Tipo de Split</Label>
+                    <Label>Tipo de Split *</Label>
                     <Select value={splitType} onValueChange={(v) => setSplitType(v as 'percentage' | 'fixed')}>
                       <SelectTrigger>
                         <SelectValue />
@@ -324,7 +356,7 @@ export default function SplitConfig() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="value">
-                      {splitType === 'percentage' ? 'Percentual' : 'Valor (R$)'}
+                      {splitType === 'percentage' ? 'Percentual *' : 'Valor (R$) *'}
                     </Label>
                     <Input
                       id="value"
@@ -360,6 +392,8 @@ export default function SplitConfig() {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead>Nome</TableHead>
+                  <TableHead>CPF/CNPJ</TableHead>
+                  <TableHead>E-mail</TableHead>
                   <TableHead>Chave PIX</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
@@ -372,6 +406,12 @@ export default function SplitConfig() {
                 {partners.map((partner) => (
                   <TableRow key={partner.id}>
                     <TableCell className="font-medium">{partner.name}</TableCell>
+                    <TableCell className="font-mono text-sm text-muted-foreground">
+                      {partner.document || '-'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {partner.email || '-'}
+                    </TableCell>
                     <TableCell className="font-mono text-sm">{partner.pix_key}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="gap-1">
@@ -395,8 +435,8 @@ export default function SplitConfig() {
                       }
                     </TableCell>
                     <TableCell>
-                      {(partner as { woovi_subaccount_id?: string | null }).woovi_subaccount_id ? (
-                        <Badge variant="outline" className="gap-1 text-green-600 border-green-600">
+                      {partner.woovi_subaccount_id ? (
+                        <Badge variant="outline" className="gap-1 text-success border-success">
                           <CheckCircle2 className="h-3 w-3" />
                           Ativa
                         </Badge>
