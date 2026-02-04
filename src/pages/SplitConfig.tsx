@@ -116,22 +116,9 @@ export default function SplitConfig() {
       return;
     }
 
-    if (splitType === 'percentage') {
-      if (value > 100) {
-        toast({ title: 'Erro', description: 'Percentual não pode ser maior que 100%', variant: 'destructive' });
-        return;
-      }
-      
-      // Check if total percentage would exceed 100%
-      const newTotal = totalPercentage + value;
-      if (newTotal > 100) {
-        toast({ 
-          title: 'Erro', 
-          description: `Total de percentuais excede 100%. Máximo disponível: ${(100 - totalPercentage).toFixed(2)}%`, 
-          variant: 'destructive' 
-        });
-        return;
-      }
+    if (splitType === 'percentage' && value > 100) {
+      toast({ title: 'Erro', description: 'Percentual não pode ser maior que 100%', variant: 'destructive' });
+      return;
     }
 
     try {
