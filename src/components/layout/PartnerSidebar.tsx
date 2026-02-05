@@ -22,6 +22,8 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 
+import { Package } from 'lucide-react';
+
 const navigation = [
   { name: 'Dashboard', href: '/partner', icon: LayoutDashboard },
   { 
@@ -33,6 +35,7 @@ const navigation = [
     ]
   },
   { name: 'Financeiro', href: '/partner/withdrawals', icon: Wallet },
+  { name: 'Produtos', href: '/partner/products', icon: Package },
 ];
 
 export function PartnerSidebar() {

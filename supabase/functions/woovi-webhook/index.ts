@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 // Woovi will often "test"/verify the endpoint using GET/HEAD or a POST without a JSON body.
 // This function must respond with 200 OK in those cases so the webhook can be registered.
@@ -141,116 +141,181 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Find the PIX charge
+    // First, try to find in pix_charges (merchant transactions)
     const { data: pixCharge, error: findError } = await supabaseAdmin
       .from("pix_charges")
       .select("id, transaction_id, user_id, status")
       .eq("woovi_correlation_id", correlationId)
       .single();
 
-    if (findError || !pixCharge) {
-      console.error("PIX charge not found:", correlationId, findError?.message);
+    if (pixCharge) {
+      console.log("Found PIX charge:", pixCharge.id, "for transaction:", pixCharge.transaction_id);
+
+      // Update PIX charge status
+      const { error: updateChargeError } = await supabaseAdmin
+        .from("pix_charges")
+        .update({
+          status: newStatus === "approved" ? "COMPLETED" : newStatus?.toUpperCase(),
+          paid_at: paidAt || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", pixCharge.id);
+
+      if (updateChargeError) {
+        console.error("Error updating PIX charge:", updateChargeError);
+      }
+
+      // Update transaction status
+      const { error: updateTransactionError } = await supabaseAdmin
+        .from("transactions")
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", pixCharge.transaction_id);
+
+      if (updateTransactionError) {
+        console.error("Error updating transaction:", updateTransactionError);
+        throw new Error(`Error updating transaction: ${updateTransactionError.message}`);
+      }
+
+      console.log("Transaction status updated to:", newStatus);
+
+      // Notify user's webhooks if configured
+      const { data: userWebhooks } = await supabaseAdmin
+        .from("webhooks")
+        .select("url, events")
+        .eq("user_id", pixCharge.user_id)
+        .eq("status", "active");
+
+      if (userWebhooks && userWebhooks.length > 0) {
+        const eventType = newStatus === "approved" ? "payment_approved" : 
+                         newStatus === "expired" ? "payment_cancelled" : 
+                         newStatus === "refunded" ? "payment_refunded" : "payment_updated";
+
+        // Get transaction details
+        const { data: transaction } = await supabaseAdmin
+          .from("transactions")
+          .select("*")
+          .eq("id", pixCharge.transaction_id)
+          .single();
+
+        for (const webhook of userWebhooks) {
+          const events = webhook.events as string[];
+          if (events.includes(eventType) || events.includes("payment_" + newStatus)) {
+            try {
+              console.log("Sending webhook to:", webhook.url);
+              await fetch(webhook.url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  event: eventType,
+                  data: {
+                    id: transaction?.id,
+                    order_id: transaction?.order_id,
+                    amount: transaction?.amount,
+                    status: newStatus,
+                    customer: {
+                      name: transaction?.customer_name,
+                      email: transaction?.customer_email,
+                    },
+                    created_at: transaction?.created_at,
+                    paid_at: paidAt,
+                  },
+                }),
+              });
+              console.log("Webhook sent successfully to:", webhook.url);
+            } catch (webhookError) {
+              console.error("Error sending webhook to", webhook.url, webhookError);
+            }
+          }
+        }
+      }
+
       return new Response(
-        JSON.stringify({ error: "PIX charge not found", correlationId }),
+        JSON.stringify({ 
+          success: true, 
+          correlationId, 
+          status: newStatus,
+          transactionId: pixCharge.transaction_id 
+        }),
         {
-          status: 404,
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    console.log("Found PIX charge:", pixCharge.id, "for transaction:", pixCharge.transaction_id);
+    // If not found in pix_charges, try partner_transactions
+    const { data: partnerTransaction, error: partnerFindError } = await supabaseAdmin
+      .from("partner_transactions")
+      .select("id, partner_id, product_id, status")
+      .eq("woovi_correlation_id", correlationId)
+      .single();
 
-    // Update PIX charge status
-    const { error: updateChargeError } = await supabaseAdmin
-      .from("pix_charges")
-      .update({
-        status: newStatus === "approved" ? "COMPLETED" : newStatus?.toUpperCase(),
-        paid_at: paidAt || null,
+    if (partnerTransaction) {
+      console.log("Found partner transaction:", partnerTransaction.id);
+
+      // Update partner transaction status
+      const updateData: Record<string, any> = {
+        status: newStatus === "approved" ? "completed" : newStatus,
         updated_at: new Date().toISOString(),
-      })
-      .eq("id", pixCharge.id);
+      };
 
-    if (updateChargeError) {
-      console.error("Error updating PIX charge:", updateChargeError);
-    }
-
-    // Update transaction status
-    const { error: updateTransactionError } = await supabaseAdmin
-      .from("transactions")
-      .update({
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", pixCharge.transaction_id);
-
-    if (updateTransactionError) {
-      console.error("Error updating transaction:", updateTransactionError);
-      throw new Error(`Error updating transaction: ${updateTransactionError.message}`);
-    }
-
-    console.log("Transaction status updated to:", newStatus);
-
-    // Notify user's webhooks if configured
-    const { data: userWebhooks } = await supabaseAdmin
-      .from("webhooks")
-      .select("url, events")
-      .eq("user_id", pixCharge.user_id)
-      .eq("status", "active");
-
-    if (userWebhooks && userWebhooks.length > 0) {
-      const eventType = newStatus === "approved" ? "payment_approved" : 
-                       newStatus === "expired" ? "payment_cancelled" : 
-                       newStatus === "refunded" ? "payment_refunded" : "payment_updated";
-
-      // Get transaction details
-      const { data: transaction } = await supabaseAdmin
-        .from("transactions")
-        .select("*")
-        .eq("id", pixCharge.transaction_id)
-        .single();
-
-      for (const webhook of userWebhooks) {
-        const events = webhook.events as string[];
-        if (events.includes(eventType) || events.includes("payment_" + newStatus)) {
-          try {
-            console.log("Sending webhook to:", webhook.url);
-            await fetch(webhook.url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                event: eventType,
-                data: {
-                  id: transaction?.id,
-                  order_id: transaction?.order_id,
-                  amount: transaction?.amount,
-                  status: newStatus,
-                  customer: {
-                    name: transaction?.customer_name,
-                    email: transaction?.customer_email,
-                  },
-                  created_at: transaction?.created_at,
-                  paid_at: paidAt,
-                },
-              }),
-            });
-            console.log("Webhook sent successfully to:", webhook.url);
-          } catch (webhookError) {
-            console.error("Error sending webhook to", webhook.url, webhookError);
-          }
-        }
+      if (paidAt) {
+        updateData.paid_at = paidAt;
       }
+
+      const { error: updatePartnerTxError } = await supabaseAdmin
+        .from("partner_transactions")
+        .update(updateData)
+        .eq("id", partnerTransaction.id);
+
+      if (updatePartnerTxError) {
+        console.error("Error updating partner transaction:", updatePartnerTxError);
+        throw new Error(`Error updating partner transaction: ${updatePartnerTxError.message}`);
+      }
+
+      console.log("Partner transaction status updated to:", newStatus);
+
+      // Update sold_count on product if approved
+      if (newStatus === "approved") {
+        const { error: updateProductError } = await supabaseAdmin
+          .from("partner_products")
+          .update({
+            sold_count: supabaseAdmin.rpc ? undefined : 1, // Will use RPC below
+          })
+          .eq("id", partnerTransaction.product_id);
+
+        // Increment sold_count
+        await supabaseAdmin.rpc("increment_partner_product_sold_count", {
+          product_id: partnerTransaction.product_id
+        }).catch(() => {
+          // If RPC doesn't exist, just log
+          console.log("RPC increment not available, skipping sold_count update");
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          correlationId, 
+          status: newStatus,
+          partnerTransactionId: partnerTransaction.id 
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
+    // Not found in either table
+    console.error("Transaction not found in pix_charges or partner_transactions:", correlationId);
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        correlationId, 
-        status: newStatus,
-        transactionId: pixCharge.transaction_id 
-      }),
+      JSON.stringify({ error: "Transaction not found", correlationId }),
       {
-        status: 200,
+        status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
