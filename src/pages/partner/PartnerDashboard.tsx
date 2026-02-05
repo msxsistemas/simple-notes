@@ -16,7 +16,9 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
-import { usePartnerProfile, usePartnerCommissions, usePartnerBalance } from '@/hooks/usePartnerData';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { usePartnerProfile } from '@/hooks/usePartnerData';
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 import { format, subMonths, startOfMonth } from 'date-fns';
@@ -33,17 +35,63 @@ const chartConfig: ChartConfig = {
   },
 };
 
+// Hook to get partner transactions and stats
+function usePartnerTransactions() {
+  const { data: partnerProfile } = usePartnerProfile();
+
+  return useQuery({
+    queryKey: ['partner_transactions', partnerProfile?.id],
+    queryFn: async () => {
+      if (!partnerProfile) return [];
+
+      const { data, error } = await supabase
+        .from('partner_transactions')
+        .select('*')
+        .eq('partner_id', partnerProfile.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!partnerProfile,
+  });
+}
+
+function usePartnerTransactionStats() {
+  const { data: transactions } = usePartnerTransactions();
+
+  return useMemo(() => {
+    if (!transactions) return {
+      approved_amount: 0,
+      total_revenue: 0,
+      approved_count: 0,
+      total_transactions: 0,
+    };
+
+    const approved = transactions.filter(tx => tx.status === 'paid');
+    const approvedAmount = approved.reduce((sum, tx) => sum + Number(tx.net_amount), 0);
+    const totalRevenue = approved.reduce((sum, tx) => sum + Number(tx.amount), 0);
+
+    return {
+      approved_amount: approvedAmount,
+      total_revenue: totalRevenue,
+      approved_count: approved.length,
+      total_transactions: transactions.length,
+    };
+  }, [transactions]);
+}
+
 export default function PartnerDashboard() {
   const navigate = useNavigate();
   const { data: profile, isLoading: profileLoading } = usePartnerProfile();
-  const { data: commissions, isLoading: commissionsLoading } = usePartnerCommissions();
-  const balance = usePartnerBalance();
+  const { data: transactions, isLoading: transactionsLoading } = usePartnerTransactions();
+  const stats = usePartnerTransactionStats();
 
-  const isLoading = profileLoading || commissionsLoading;
+  const isLoading = profileLoading || transactionsLoading;
 
   // Calculate monthly sales data for chart
   const salesData = useMemo(() => {
-    if (!commissions) return [];
+    if (!transactions) return [];
     
     const last6Months = Array.from({ length: 6 }, (_, i) => {
       const date = subMonths(new Date(), 5 - i);
@@ -55,14 +103,17 @@ export default function PartnerDashboard() {
       };
     });
 
-    commissions.forEach((commission) => {
-      const txDate = new Date(commission.created_at);
+    transactions.forEach((tx) => {
+      const txDate = new Date(tx.created_at);
       const monthIndex = last6Months.findIndex(
         (m) => txDate >= m.monthStart && txDate < subMonths(m.monthStart, -1)
       );
       if (monthIndex !== -1) {
-        last6Months[monthIndex].sales += Number(commission.commission_amount);
-        last6Months[monthIndex].conversions += 1;
+        if (tx.status === 'paid') {
+          // Faturamento deve contar apenas pagas
+          last6Months[monthIndex].sales += Number(tx.amount);
+          last6Months[monthIndex].conversions += 1;
+        }
       }
     });
 
@@ -71,43 +122,47 @@ export default function PartnerDashboard() {
       sales,
       conversions,
     }));
-  }, [commissions]);
+  }, [transactions]);
 
-  // Get recent commissions
-  const recentCommissions = useMemo(() => {
-    if (!commissions) return [];
-    return commissions.slice(0, 5).map((commission) => ({
-      id: commission.id,
-      customer: commission.customer_name,
-      amount: Number(commission.commission_amount),
-      saleAmount: Number(commission.amount),
-      time: getTimeAgo(new Date(commission.created_at)),
+  // Get recent transactions
+  const recentTransactions = useMemo(() => {
+    if (!transactions) return [];
+    return transactions.slice(0, 5).map((tx) => ({
+      id: tx.id,
+      customer: tx.customer_name || 'Cliente',
+      amount: Number(tx.amount),
+      status: tx.status,
+      time: getTimeAgo(new Date(tx.created_at)),
     }));
-  }, [commissions]);
+  }, [transactions]);
 
-  const totalSales = commissions?.length || 0;
-  const conversionRate = totalSales > 0 ? 100 : 0; // All commissions are from approved sales
+  const availableBalance = stats.approved_amount;
+  const totalRevenue = stats.total_revenue;
+  const approvedCount = stats.approved_count;
+  const conversionRate = stats.total_transactions 
+    ? Math.round((stats.approved_count / stats.total_transactions) * 100) 
+    : 0;
 
   const dashboardStats = [
     {
       title: 'Saldo Disponível',
-      value: formatCurrency(balance.availableBalance),
+      value: formatCurrency(availableBalance),
       icon: Wallet,
       hasBorder: true,
       color: 'text-primary',
       borderColor: 'border-primary',
     },
     {
-      title: 'Total Ganho',
-      value: formatCurrency(balance.totalEarned),
+      title: 'Faturamento Total',
+      value: formatCurrency(totalRevenue),
       icon: DollarSign,
       hasBorder: true,
       color: 'text-success',
       borderColor: 'border-success',
     },
     {
-      title: 'Vendas Totais',
-      value: totalSales.toString(),
+      title: 'Vendas Aprovadas',
+      value: approvedCount.toString(),
       icon: ShoppingCart,
       hasBorder: false,
       color: 'text-success',
@@ -169,7 +224,7 @@ export default function PartnerDashboard() {
         {/* Sales Chart - Takes 2 columns */}
         <Card className="lg:col-span-2 border-0 shadow-sm bg-white dark:bg-card">
           <CardHeader className="pb-0">
-            <CardTitle className="text-base font-semibold text-foreground">Comissões</CardTitle>
+            <CardTitle className="text-base font-semibold text-foreground">Vendas</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <ChartContainer config={chartConfig} className="h-[280px] w-full">
@@ -207,7 +262,7 @@ export default function PartnerDashboard() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="h-3 w-3 rounded-full bg-[#22c55e] flex-shrink-0" />
-                            <span className="text-xs text-gray-600 dark:text-muted-foreground">Comissões:</span>
+                            <span className="text-xs text-gray-600 dark:text-muted-foreground">Faturamento:</span>
                             <span className="text-xs font-bold text-gray-900 dark:text-foreground">
                               R${Number(payload[0].value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </span>
@@ -272,39 +327,47 @@ export default function PartnerDashboard() {
         </Card>
       </div>
 
-      {/* Recent Commissions */}
+      {/* Recent Transactions */}
       <Card className="border-0 shadow-sm bg-white dark:bg-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-base font-semibold">Comissões Recentes</CardTitle>
-            <CardDescription>Últimas 5 comissões</CardDescription>
+            <CardTitle className="text-base font-semibold">Transações Recentes</CardTitle>
+            <CardDescription>Últimas 5 transações</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate('/partner/commissions')}>
             Ver todas
           </Button>
         </CardHeader>
         <CardContent>
-          {recentCommissions.length === 0 ? (
+          {recentTransactions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Nenhuma comissão ainda
+              Nenhuma transação ainda
             </div>
           ) : (
             <div className="space-y-4">
-              {recentCommissions.map((commission) => (
-                <div key={commission.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+              {recentTransactions.map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                       <Users className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{commission.customer}</p>
-                      <p className="text-xs text-muted-foreground">{commission.time}</p>
+                      <p className="font-medium text-sm">{tx.customer}</p>
+                      <p className="text-xs text-muted-foreground">{tx.time}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-success">+{formatCurrency(commission.amount)}</p>
-                    <span className="text-xs text-muted-foreground">
-                      Venda: {formatCurrency(commission.saleAmount)}
+                    <p className="font-semibold">R$ {tx.amount.toFixed(2)}</p>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        tx.status === 'paid'
+                          ? 'bg-success/10 text-success'
+                          : tx.status === 'pending'
+                          ? 'bg-warning/10 text-warning'
+                          : 'bg-destructive/10 text-destructive'
+                      }`}
+                    >
+                      {tx.status === 'paid' ? 'Aprovado' : tx.status === 'pending' ? 'Pendente' : 'Cancelado'}
                     </span>
                   </div>
                 </div>
