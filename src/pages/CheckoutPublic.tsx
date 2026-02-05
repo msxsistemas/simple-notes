@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
- import { formatPhone, formatCPF, formatCurrency, parseCurrency } from '@/lib/masks';
+ import { formatPhone, formatCPF, formatCurrency, parseCurrency, isValidCPF } from '@/lib/masks';
  import { usePublicCheckoutConfig } from '@/hooks/useCheckoutConfig';
 
 type PaymentStatus = 'idle' | 'loading' | 'pending' | 'approved' | 'cancelled' | 'expired';
@@ -135,15 +135,34 @@ export default function CheckoutPublic() {
   }, [expiresAt, status, toast]);
 
   const handleGeneratePix = async () => {
-    if (!amount || !customerName || !customerEmail) {
+   if (!amount) {
       toast({ 
         title: 'Erro', 
-        description: 'Preencha todos os campos obrigatórios', 
+       description: 'Informe o valor do pagamento', 
         variant: 'destructive' 
       });
       return;
     }
 
+   // Validate CPF if provided or required
+   if (customerTaxId) {
+     if (!isValidCPF(customerTaxId)) {
+       toast({ 
+         title: 'Erro', 
+         description: 'O CPF informado é inválido', 
+         variant: 'destructive' 
+       });
+       return;
+     }
+   } else if (config.require_cpf) {
+     toast({ 
+       title: 'Erro', 
+       description: 'CPF é obrigatório', 
+       variant: 'destructive' 
+     });
+     return;
+   }
+ 
     setStatus('loading');
 
     try {
@@ -321,7 +340,7 @@ export default function CheckoutPublic() {
               </div>
               {config.show_name && (
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo *</Label>
+                  <Label htmlFor="name">Nome completo</Label>
                   <Input
                     id="name"
                     placeholder="Seu nome completo"
@@ -332,7 +351,7 @@ export default function CheckoutPublic() {
               )}
               {config.show_email && (
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-mail *</Label>
+                  <Label htmlFor="email">E-mail</Label>
                   <Input
                     id="email"
                     type="email"
@@ -363,9 +382,15 @@ export default function CheckoutPublic() {
                         id="taxId"
                         placeholder="000.000.000-00"
                         value={customerTaxId}
-                        onChange={(e) => setCustomerTaxId(formatCPF(e.target.value))}
+                        onChange={(e) => {
+                          const formatted = formatCPF(e.target.value);
+                          setCustomerTaxId(formatted);
+                        }}
                         maxLength={14}
                       />
+                      {customerTaxId && customerTaxId.length === 14 && !isValidCPF(customerTaxId) && (
+                        <p className="text-xs text-destructive">CPF inválido</p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -381,11 +406,10 @@ export default function CheckoutPublic() {
                <Button
                  onClick={handleGeneratePix}
                  disabled={
-                   !amount || 
-                    (config.show_name && !customerName) || 
-                    (config.show_email && !customerEmail) || 
+                   !amount ||
                    (config.require_phone && !customerPhone) ||
-                   (config.require_cpf && !customerTaxId)
+                   (config.require_cpf && !customerTaxId) ||
+                   (customerTaxId && customerTaxId.length === 14 && !isValidCPF(customerTaxId))
                  }
                  className="w-full text-lg py-6 shadow-lg hover:shadow-xl transition-all"
                  style={{ backgroundColor: config.primary_color }}

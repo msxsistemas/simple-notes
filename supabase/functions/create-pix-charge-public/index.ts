@@ -150,10 +150,10 @@ Deno.serve(async (req) => {
       expiresIn = 3600,
     } = body;
 
-    if (!amount || !customerName || !customerEmail) {
+   if (!amount) {
       console.error("Missing required fields");
       return new Response(
-        JSON.stringify({ success: false, error: "Campos obrigatórios: valor, nome e email" }),
+       JSON.stringify({ success: false, error: "Campo obrigatório: valor" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -253,14 +253,18 @@ Deno.serve(async (req) => {
       value: Math.round(amount * 100),
       comment: description || productName || `Pagamento ${orderId || correlationID}`,
       expiresIn,
-      customer: {
-        name: customerName,
-        email: customerEmail,
-        phone: customerPhone?.replace(/\D/g, "") || undefined,
-        taxID: customerTaxId?.replace(/\D/g, "") || undefined,
-      },
     };
 
+   // Add customer info only if provided
+   if (customerName || customerEmail || customerPhone || customerTaxId) {
+     chargePayload.customer = {
+       name: customerName || 'Cliente',
+       email: customerEmail || undefined,
+       phone: customerPhone?.replace(/\D/g, "") || undefined,
+       taxID: customerTaxId?.replace(/\D/g, "") || undefined,
+     };
+   }
+ 
     // Add splits if available
     if (splits.length > 0) {
       chargePayload.splits = splits;
@@ -297,8 +301,8 @@ Deno.serve(async (req) => {
         net_amount: netAmount,
         payment_method: "pix",
         status: "pending",
-        customer_name: customerName,
-        customer_email: customerEmail,
+       customer_name: customerName || 'Cliente',
+       customer_email: customerEmail || 'nao-informado@checkout.local',
         customer_phone: customerPhone || null,
         pix_code: wooviData.charge?.brCode || wooviData.brCode,
         pix_qr_code: wooviData.charge?.qrCodeImage,
