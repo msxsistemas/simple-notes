@@ -116,9 +116,11 @@ Deno.serve(async (req) => {
         .update({ status: "failed" })
         .eq("id", withdrawal.id);
 
+      // Return the actual Woovi error message directly
+      const errorMessage = wooviResult.error || wooviResult.message || "Falha ao processar saque na Woovi";
       return new Response(
-        JSON.stringify({ error: "Failed to process withdrawal", details: wooviResult }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: errorMessage }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
