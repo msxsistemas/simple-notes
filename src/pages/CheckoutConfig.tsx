@@ -25,6 +25,7 @@
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
  import { useCheckoutConfig } from '@/hooks/useCheckoutConfig';
  import { useAuth } from '@/contexts/AuthContext';
+ import { CheckoutPreview } from '@/components/checkout/CheckoutPreview';
  
  export default function CheckoutConfig() {
    const { toast } = useToast();
@@ -279,7 +280,36 @@
  
          {/* Tab: Personalizar */}
          <TabsContent value="customize" className="space-y-6">
-           <div className="grid gap-6 lg:grid-cols-2">
+           <div className="grid gap-6 lg:grid-cols-3">
+             {/* Preview Card */}
+             <Card className="border-border/50 lg:row-span-2 order-first lg:order-last">
+               <CardHeader className="pb-2">
+                 <CardTitle className="text-lg flex items-center gap-2">
+                   <Eye className="h-5 w-5 text-primary" strokeWidth={1.5} />
+                   Preview ao Vivo
+                 </CardTitle>
+                 <CardDescription>
+                   Visualize as mudanças em tempo real
+                 </CardDescription>
+               </CardHeader>
+               <CardContent>
+                 <CheckoutPreview
+                   logoUrl={logoUrl}
+                   primaryColor={primaryColor}
+                   backgroundColor={backgroundColor}
+                   textColor={textColor}
+                   customTitle={customTitle}
+                   customDescription={customDescription}
+                   showName={showName}
+                   showEmail={showEmail}
+                   showPhone={showPhone}
+                   showCpf={showCpf}
+                   requirePhone={requirePhone}
+                   requireCpf={requireCpf}
+                 />
+               </CardContent>
+             </Card>
+ 
              <Card className="border-border/50">
                <CardHeader>
                  <CardTitle className="text-lg flex items-center gap-2">
@@ -336,7 +366,7 @@
                </CardContent>
              </Card>
  
-             <Card className="border-border/50">
+             <Card className="border-border/50 lg:col-start-2">
                <CardHeader>
                  <CardTitle className="text-lg flex items-center gap-2">
                    <Palette className="h-5 w-5 text-primary" strokeWidth={1.5} />
@@ -404,16 +434,6 @@
                    </div>
                  </div>
  
-                 {/* Preview */}
-                 <div className="mt-4 p-4 rounded-lg border border-border/50" style={{ backgroundColor }}>
-                   <p className="text-sm font-medium mb-2" style={{ color: textColor }}>Preview</p>
-                   <div 
-                     className="px-4 py-2 rounded-lg text-center font-medium text-white"
-                     style={{ backgroundColor: primaryColor }}
-                   >
-                     Pagar com PIX
-                   </div>
-                 </div>
                </CardContent>
              </Card>
            </div>
