@@ -9,7 +9,8 @@ import {
   ChevronRight,
   ChevronDown,
   CreditCard,
-  KeyRound,
+  ArrowUpRight,
+  ArrowDownRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,9 +24,15 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/partner', icon: LayoutDashboard },
-  { name: 'Comissões', href: '/partner/commissions', icon: FileText },
-  { name: 'Saques', href: '/partner/withdrawals', icon: Wallet },
-  { name: 'Dados PIX', href: '/partner/settings', icon: KeyRound },
+  { 
+    name: 'Relatório', 
+    icon: FileText,
+    subItems: [
+      { name: 'Comissões', href: '/partner/commissions', icon: ArrowUpRight },
+      { name: 'Saques', href: '/partner/withdrawals', icon: ArrowDownRight },
+    ]
+  },
+  { name: 'Financeiro', href: '/partner/withdrawals', icon: Wallet },
 ];
 
 export function PartnerSidebar() {
@@ -38,7 +45,7 @@ export function PartnerSidebar() {
   // Auto-open the correct menu based on current route
   useEffect(() => {
     const currentMenu = navigation.find(item => 
-      'subItems' in item && (item as any).subItems?.some((sub: any) => location.pathname.startsWith(sub.href))
+      'subItems' in item && item.subItems?.some(sub => location.pathname.startsWith(sub.href))
     );
     if (currentMenu) {
       setOpenMenu(currentMenu.name);
@@ -85,10 +92,9 @@ export function PartnerSidebar() {
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
           {navigation.map((item) => {
-            if ('subItems' in item && (item as any).subItems) {
-              const subItems = (item as any).subItems;
+            if ('subItems' in item && item.subItems) {
               const isOpen = openMenu === item.name;
-              const isActive = subItems.some((sub: any) => location.pathname.startsWith(sub.href));
+              const isActive = item.subItems.some(sub => location.pathname.startsWith(sub.href));
               
               return (
                 <Collapsible key={item.name} open={isOpen && !isCollapsed} onOpenChange={() => toggleMenu(item.name)}>
@@ -112,7 +118,7 @@ export function PartnerSidebar() {
                   </CollapsibleTrigger>
                   {!isCollapsed && (
                     <CollapsibleContent className="pl-6 mt-1 space-y-1">
-                      {subItems.map((subItem: any) => {
+                      {item.subItems.map((subItem) => {
                         const isSubActive = location.pathname === subItem.href;
                         return (
                           <NavLink
