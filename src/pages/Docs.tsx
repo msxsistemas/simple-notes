@@ -112,7 +112,7 @@ export default function Docs() {
                 <BookOpen className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="text-xl font-bold mb-2">API PixPay</h2>
+               <h2 className="text-xl font-bold mb-2">API Msx Pay</h2>
                 <p className="text-muted-foreground mb-4">
                   Integre pagamentos PIX à sua aplicação de forma simples e segura.
                 </p>

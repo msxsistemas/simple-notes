@@ -146,7 +146,7 @@ export default function Checkout() {
           customerPhone: customerPhone || undefined,
           customerTaxId: customerTaxId || undefined,
           orderId: orderId || undefined,
-          description: `Pagamento via PixPay`,
+         description: `Pagamento via Msx Pay`,
           expiresIn: 3600, // 1 hour
         },
       });

@@ -185,7 +185,7 @@ export default function CheckoutPublic() {
             orderId: orderId || undefined,
             merchantId: merchantId || undefined,
             productName: productName || undefined,
-            description: productName ? `Pagamento: ${productName}` : 'Pagamento via PixPay',
+           description: productName ? `Pagamento: ${productName}` : 'Pagamento via Msx Pay',
             expiresIn: 3600,
           }),
         }
