@@ -2,3 +2,6 @@ project_id = "mqsdkrmgsflisswrwkas"
 
 [functions.process-partner-withdrawal]
 verify_jwt = false
+
+[functions.create-partner-pix-charge]
+verify_jwt = false

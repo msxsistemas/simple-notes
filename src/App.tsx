@@ -27,6 +27,8 @@ import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerCommissions from "./pages/partner/PartnerCommissions";
 import PartnerWithdrawals from "./pages/partner/PartnerWithdrawals";
 import PartnerSettings from "./pages/partner/PartnerSettings";
+import PartnerProducts from "./pages/partner/PartnerProducts";
+import PartnerCheckoutPublic from "./pages/PartnerCheckoutPublic";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,10 @@ const App = () => (
             <Route path="/partner/commissions" element={<PartnerCommissions />} />
             <Route path="/partner/withdrawals" element={<PartnerWithdrawals />} />
             <Route path="/partner/settings" element={<PartnerSettings />} />
+            <Route path="/partner/products" element={<PartnerProducts />} />
+            
+            {/* Partner public checkout */}
+            <Route path="/partner-pay/:partnerId/:productId" element={<PartnerCheckoutPublic />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

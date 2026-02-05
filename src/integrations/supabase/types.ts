@@ -178,6 +178,128 @@ export type Database = {
           },
         ]
       }
+      partner_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          partner_id: string
+          price: number
+          sold_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          partner_id: string
+          price: number
+          sold_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          partner_id?: string
+          price?: number
+          sold_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_products_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "split_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_document: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          fee: number
+          id: string
+          net_amount: number
+          paid_at: string | null
+          partner_id: string
+          pix_code: string | null
+          product_id: string
+          qr_code_base64: string | null
+          status: string
+          updated_at: string
+          woovi_charge_id: string | null
+          woovi_correlation_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          fee?: number
+          id?: string
+          net_amount: number
+          paid_at?: string | null
+          partner_id: string
+          pix_code?: string | null
+          product_id: string
+          qr_code_base64?: string | null
+          status?: string
+          updated_at?: string
+          woovi_charge_id?: string | null
+          woovi_correlation_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_document?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          fee?: number
+          id?: string
+          net_amount?: number
+          paid_at?: string | null
+          partner_id?: string
+          pix_code?: string | null
+          product_id?: string
+          qr_code_base64?: string | null
+          status?: string
+          updated_at?: string
+          woovi_charge_id?: string | null
+          woovi_correlation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_transactions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "split_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_transactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "partner_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pix_charges: {
         Row: {
           amount: number
