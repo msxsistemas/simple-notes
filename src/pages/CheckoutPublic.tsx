@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
- import { formatPhone, formatCPF, formatCurrency, parseCurrency, isValidCPF } from '@/lib/masks';
+ import { formatPhone, formatCPF, formatCurrency, parseCurrency, isValidCPF, isValidEmail } from '@/lib/masks';
  import { usePublicCheckoutConfig } from '@/hooks/useCheckoutConfig';
 
 type PaymentStatus = 'idle' | 'loading' | 'pending' | 'approved' | 'cancelled' | 'expired';
@@ -142,6 +142,35 @@ export default function CheckoutPublic() {
         variant: 'destructive' 
       });
       return;
+    }
+
+    // Nome/E-mail: quando exibidos, são obrigatórios para reduzir fraude e melhorar contato.
+    if (config.show_name && !customerName.trim()) {
+      toast({
+        title: 'Erro',
+        description: 'Nome é obrigatório',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (config.show_email) {
+      if (!customerEmail.trim()) {
+        toast({
+          title: 'Erro',
+          description: 'E-mail é obrigatório',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (!isValidEmail(customerEmail)) {
+        toast({
+          title: 'Erro',
+          description: 'Informe um e-mail válido',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
 
    // Validate CPF if provided or required
@@ -340,7 +369,7 @@ export default function CheckoutPublic() {
               </div>
               {config.show_name && (
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo</Label>
+                  <Label htmlFor="name">Nome completo *</Label>
                   <Input
                     id="name"
                     placeholder="Seu nome completo"
@@ -351,7 +380,7 @@ export default function CheckoutPublic() {
               )}
               {config.show_email && (
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
+                  <Label htmlFor="email">E-mail *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -407,6 +436,8 @@ export default function CheckoutPublic() {
                  onClick={handleGeneratePix}
                  disabled={
                    !amount ||
+                    (config.show_name && !customerName.trim()) ||
+                    (config.show_email && (!customerEmail.trim() || !isValidEmail(customerEmail))) ||
                    (config.require_phone && !customerPhone) ||
                    (config.require_cpf && !customerTaxId) ||
                    (customerTaxId && customerTaxId.length === 14 && !isValidCPF(customerTaxId))
