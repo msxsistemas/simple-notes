@@ -41,6 +41,8 @@ import { useState, useEffect, useRef } from 'react';
    const [textColor, setTextColor] = useState('#FFFFFF');
    const [requirePhone, setRequirePhone] = useState(false);
    const [requireCpf, setRequireCpf] = useState(false);
+  const [requireName, setRequireName] = useState(false);
+  const [requireEmail, setRequireEmail] = useState(false);
    const [customTitle, setCustomTitle] = useState('');
    const [customDescription, setCustomDescription] = useState('');
    const [successMessage, setSuccessMessage] = useState('');
@@ -54,6 +56,8 @@ import { useState, useEffect, useRef } from 'react';
      setPrimaryColor('#8B5CF6');
      setBackgroundColor('#0F0F23');
      setTextColor('#FFFFFF');
+    setRequireName(false);
+    setRequireEmail(false);
      setRequirePhone(false);
      setRequireCpf(false);
      setCustomTitle('');
@@ -80,6 +84,8 @@ import { useState, useEffect, useRef } from 'react';
     setPrimaryColor(config.primary_color);
     setBackgroundColor(config.background_color);
     setTextColor(config.text_color);
+    setRequireName(config.require_name);
+    setRequireEmail(config.require_email);
     setRequirePhone(config.require_phone);
     setRequireCpf(config.require_cpf);
     setCustomTitle(config.custom_title || '');
@@ -117,6 +123,8 @@ import { useState, useEffect, useRef } from 'react';
          primary_color: primaryColor,
          background_color: backgroundColor,
          text_color: textColor,
+        require_name: requireName,
+        require_email: requireEmail,
          require_phone: requirePhone,
          require_cpf: requireCpf,
          custom_title: customTitle || null,
@@ -615,6 +623,32 @@ import { useState, useEffect, useRef } from 'react';
                   <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Campos Obrigatórios</h4>
                   <p className="text-xs text-muted-foreground mb-4">Defina quais campos visíveis são obrigatórios para prosseguir</p>
                 </div>
+
+               <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 ${!showName ? 'opacity-50' : ''}`}>
+                 <div>
+                   <Label htmlFor="requireName" className="text-base">Nome Obrigatório</Label>
+                   <p className="text-sm text-muted-foreground">Exigir nome para gerar PIX</p>
+                 </div>
+                 <Switch
+                   id="requireName"
+                   checked={requireName}
+                   onCheckedChange={setRequireName}
+                   disabled={!showName}
+                 />
+               </div>
+
+               <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 ${!showEmail ? 'opacity-50' : ''}`}>
+                 <div>
+                   <Label htmlFor="requireEmail" className="text-base">E-mail Obrigatório</Label>
+                   <p className="text-sm text-muted-foreground">Exigir e-mail para gerar PIX</p>
+                 </div>
+                 <Switch
+                   id="requireEmail"
+                   checked={requireEmail}
+                   onCheckedChange={setRequireEmail}
+                   disabled={!showEmail}
+                 />
+               </div>
 
                 <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 ${!showPhone ? 'opacity-50' : ''}`}>
                   <div>

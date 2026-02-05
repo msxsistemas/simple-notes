@@ -10,6 +10,8 @@ import { useMemo } from 'react';
    primary_color: string;
    background_color: string;
    text_color: string;
+  require_name: boolean;
+  require_email: boolean;
    require_phone: boolean;
    require_cpf: boolean;
    show_product_name: boolean;
@@ -29,6 +31,8 @@ import { useMemo } from 'react';
    primary_color: '#8B5CF6',
    background_color: '#0F0F23',
    text_color: '#FFFFFF',
+  require_name: false,
+  require_email: false,
    require_phone: false,
    require_cpf: false,
    show_product_name: true,
@@ -49,6 +53,8 @@ function mergeWithDefaults(
     primary_color: config?.primary_color ?? defaultConfig.primary_color,
     background_color: config?.background_color ?? defaultConfig.background_color,
     text_color: config?.text_color ?? defaultConfig.text_color,
+    require_name: config?.require_name ?? defaultConfig.require_name,
+    require_email: config?.require_email ?? defaultConfig.require_email,
     require_phone: config?.require_phone ?? defaultConfig.require_phone,
     require_cpf: config?.require_cpf ?? defaultConfig.require_cpf,
     show_product_name: config?.show_product_name ?? defaultConfig.show_product_name,
@@ -115,6 +121,8 @@ function mergeWithDefaults(
     config?.primary_color,
     config?.background_color,
     config?.text_color,
+    config?.require_name,
+    config?.require_email,
     config?.require_phone,
     config?.require_cpf,
     config?.show_product_name,
@@ -163,6 +171,8 @@ function mergeWithDefaults(
     config?.primary_color,
     config?.background_color,
     config?.text_color,
+    config?.require_name,
+    config?.require_email,
     config?.require_phone,
     config?.require_cpf,
     config?.show_product_name,
