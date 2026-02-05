@@ -48,6 +48,8 @@ export type Database = {
           logo_url: string | null
           primary_color: string | null
           require_cpf: boolean | null
+          require_email: boolean | null
+          require_name: boolean | null
           require_phone: boolean | null
           show_cpf: boolean | null
           show_email: boolean | null
@@ -68,6 +70,8 @@ export type Database = {
           logo_url?: string | null
           primary_color?: string | null
           require_cpf?: boolean | null
+          require_email?: boolean | null
+          require_name?: boolean | null
           require_phone?: boolean | null
           show_cpf?: boolean | null
           show_email?: boolean | null
@@ -88,6 +92,8 @@ export type Database = {
           logo_url?: string | null
           primary_color?: string | null
           require_cpf?: boolean | null
+          require_email?: boolean | null
+          require_name?: boolean | null
           require_phone?: boolean | null
           show_cpf?: boolean | null
           show_email?: boolean | null
