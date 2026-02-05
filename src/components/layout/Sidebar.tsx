@@ -88,7 +88,7 @@ export function Sidebar() {
               <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
                 <CreditCard className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-bold text-sidebar-foreground">PixPay</span>
+             <span className="text-lg font-bold text-sidebar-foreground">Msx Pay</span>
             </div>
           )}
           {isCollapsed && (

@@ -106,7 +106,7 @@ export default function Auth() {
           <div className="h-14 w-14 rounded-xl gradient-primary flex items-center justify-center shadow-glow mb-4">
             <CreditCard className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">PixPay</h1>
+         <h1 className="text-2xl font-bold text-foreground">Msx Pay</h1>
           <p className="text-muted-foreground text-sm">Plataforma de Pagamentos</p>
         </div>
 
