@@ -22,6 +22,7 @@ export interface PartnerCommission {
   id: string;
   transaction_id: string;
   amount: number;
+  net_amount: number;
   commission_amount: number;
   created_at: string;
   customer_name: string;
@@ -85,16 +86,18 @@ export function usePartnerCommissions() {
 
       if (error) throw error;
 
-      // Calculate commission for each transaction
+      // Calculate commission for each transaction based on net_amount (after fees)
       return (data || []).map((tx: any) => {
+        const baseAmount = Number(tx.net_amount); // Use net_amount instead of gross amount
         const commissionAmount = partnerProfile.split_type === 'percentage'
-          ? (Number(tx.amount) * partnerProfile.split_value) / 100
+          ? (baseAmount * partnerProfile.split_value) / 100
           : partnerProfile.split_value;
 
         return {
           id: tx.id,
           transaction_id: tx.id,
           amount: Number(tx.amount),
+          net_amount: baseAmount,
           commission_amount: commissionAmount,
           created_at: tx.created_at,
           customer_name: tx.customer_name,
