@@ -308,6 +308,7 @@ export type Database = {
       }
       split_partners: {
         Row: {
+          auth_user_id: string | null
           created_at: string
           document: string | null
           email: string | null
@@ -322,6 +323,7 @@ export type Database = {
           woovi_subaccount_id: string | null
         }
         Insert: {
+          auth_user_id?: string | null
           created_at?: string
           document?: string | null
           email?: string | null
@@ -336,6 +338,7 @@ export type Database = {
           woovi_subaccount_id?: string | null
         }
         Update: {
+          auth_user_id?: string | null
           created_at?: string
           document?: string | null
           email?: string | null
@@ -405,6 +408,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhooks: {
         Row: {
           created_at: string
@@ -442,6 +466,7 @@ export type Database = {
           document: string
           fee: number
           id: string
+          partner_id: string | null
           pix_key: string
           recipient_name: string
           status: string
@@ -454,6 +479,7 @@ export type Database = {
           document: string
           fee?: number
           id?: string
+          partner_id?: string | null
           pix_key: string
           recipient_name: string
           status?: string
@@ -466,23 +492,42 @@ export type Database = {
           document?: string
           fee?: number
           id?: string
+          partner_id?: string | null
           pix_key?: string
           recipient_name?: string
           status?: string
           total?: number
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "split_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "merchant" | "partner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -609,6 +654,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "merchant", "partner"],
+    },
   },
 } as const

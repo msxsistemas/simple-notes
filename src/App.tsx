@@ -13,13 +13,20 @@ import Financial from "./pages/Financial";
 import Products from "./pages/Products";
 import Checkout from "./pages/Checkout";
 import CheckoutPublic from "./pages/CheckoutPublic";
- import CheckoutConfig from "./pages/CheckoutConfig";
+import CheckoutConfig from "./pages/CheckoutConfig";
 import Integrations from "./pages/Integrations";
 import Fees from "./pages/Fees";
 import Docs from "./pages/Docs";
 import Settings from "./pages/Settings";
 import SplitConfig from "./pages/SplitConfig";
 import NotFound from "./pages/NotFound";
+
+// Partner pages
+import PartnerAuth from "./pages/PartnerAuth";
+import PartnerDashboard from "./pages/partner/PartnerDashboard";
+import PartnerCommissions from "./pages/partner/PartnerCommissions";
+import PartnerWithdrawals from "./pages/partner/PartnerWithdrawals";
+import PartnerSettings from "./pages/partner/PartnerSettings";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +47,7 @@ const App = () => (
             <Route path="/reports/withdrawals" element={<ReportsWithdrawals />} />
             <Route path="/financial" element={<Financial />} />
             <Route path="/products" element={<Products />} />
-             <Route path="/checkout" element={<CheckoutConfig />} />
+            <Route path="/checkout" element={<CheckoutConfig />} />
             <Route path="/checkout/demo" element={<Checkout />} />
             <Route path="/pay" element={<CheckoutPublic />} />
             <Route path="/integrations" element={<Integrations />} />
@@ -48,6 +55,14 @@ const App = () => (
             <Route path="/split" element={<SplitConfig />} />
             <Route path="/docs" element={<Docs />} />
             <Route path="/settings" element={<Settings />} />
+            
+            {/* Partner routes */}
+            <Route path="/partner/auth" element={<PartnerAuth />} />
+            <Route path="/partner" element={<PartnerDashboard />} />
+            <Route path="/partner/commissions" element={<PartnerCommissions />} />
+            <Route path="/partner/withdrawals" element={<PartnerWithdrawals />} />
+            <Route path="/partner/settings" element={<PartnerSettings />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

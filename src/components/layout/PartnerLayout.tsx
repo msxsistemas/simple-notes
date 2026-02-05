@@ -1,16 +1,16 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Sidebar } from './Sidebar';
+import { PartnerSidebar } from './PartnerSidebar';
 import { Header } from './Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 
-interface DashboardLayoutProps {
+interface PartnerLayoutProps {
   children: ReactNode;
   title?: string;
 }
 
-export function DashboardLayout({ children, title }: DashboardLayoutProps) {
+export function PartnerLayout({ children, title }: PartnerLayoutProps) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { data: role, isLoading: roleLoading } = useUserRole();
 
@@ -31,14 +31,26 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Redirect partners to their portal
-  if (role === 'partner') {
-    return <Navigate to="/partner" replace />;
+  // If user is admin, redirect to admin dashboard
+  if (role === 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // If user is not a partner, show error
+  if (role !== 'partner') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Acesso Negado</h1>
+          <p className="text-muted-foreground">Você não tem permissão para acessar esta área.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
+      <PartnerSidebar />
       <div className="pl-64 transition-all duration-300">
         <Header title={title} />
         <main className="p-6">{children}</main>
