@@ -106,10 +106,10 @@ Deno.serve(async (req) => {
     );
 
     const wooviResult = await wooviResponse.json();
-    console.log("Woovi response:", JSON.stringify(wooviResult));
+    console.log("Woovi withdraw response:", JSON.stringify(wooviResult));
 
     if (!wooviResponse.ok) {
-      console.error("Woovi error:", wooviResult);
+      console.error("Woovi withdraw error:", wooviResult);
       
       await supabase
         .from("withdrawals")
@@ -122,6 +122,39 @@ Deno.serve(async (req) => {
       );
     }
 
+    // If there's a fee, debit it from subaccount to main account
+    let feeDebitResult = null;
+    if (fee && fee > 0) {
+      const feeInCents = Math.round(fee * 100);
+      console.log(`Debiting fee of ${feeInCents} cents from subaccount ${pixKey} to main account`);
+      
+      const feeDebitResponse = await fetch(
+        `https://api.woovi.com/api/v1/subaccount/${pixKey}/debit`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": wooviApiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            value: feeInCents,
+            description: `Taxa de saque - ID: ${withdrawal.id}`,
+          }),
+        }
+      );
+
+      feeDebitResult = await feeDebitResponse.json();
+      console.log("Fee debit response:", JSON.stringify(feeDebitResult));
+
+      if (!feeDebitResponse.ok) {
+        console.error("Fee debit failed (withdrawal already processed):", feeDebitResult);
+        // Note: We don't fail the withdrawal if fee debit fails, just log it
+        // The withdrawal itself was successful
+      } else {
+        console.log(`Fee of R$ ${fee} successfully debited to main account`);
+      }
+    }
+
     await supabase
       .from("withdrawals")
       .update({ status: "completed" })
@@ -130,7 +163,12 @@ Deno.serve(async (req) => {
     console.log(`Withdrawal ${withdrawal.id} completed`);
 
     return new Response(
-      JSON.stringify({ success: true, withdrawal: { ...withdrawal, status: "completed" }, transaction: wooviResult.transaction }),
+      JSON.stringify({ 
+        success: true, 
+        withdrawal: { ...withdrawal, status: "completed" }, 
+        transaction: wooviResult.transaction,
+        feeDebit: feeDebitResult,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
