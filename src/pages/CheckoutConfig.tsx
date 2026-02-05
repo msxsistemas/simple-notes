@@ -42,6 +42,10 @@
    const [customTitle, setCustomTitle] = useState('');
    const [customDescription, setCustomDescription] = useState('');
    const [successMessage, setSuccessMessage] = useState('');
+  const [showName, setShowName] = useState(true);
+  const [showEmail, setShowEmail] = useState(true);
+  const [showPhone, setShowPhone] = useState(true);
+  const [showCpf, setShowCpf] = useState(true);
    
    // Sync form state with config
    useEffect(() => {
@@ -55,6 +59,10 @@
        setCustomTitle(config.custom_title || '');
        setCustomDescription(config.custom_description || '');
        setSuccessMessage(config.success_message || '');
+      setShowName(config.show_name);
+      setShowEmail(config.show_email);
+      setShowPhone(config.show_phone);
+      setShowCpf(config.show_cpf);
      }
    }, [config]);
    
@@ -89,6 +97,10 @@
          custom_title: customTitle || null,
          custom_description: customDescription || null,
          success_message: successMessage || null,
+        show_name: showName,
+        show_email: showEmail,
+        show_phone: showPhone,
+        show_cpf: showCpf,
        });
        toast({ title: 'Salvo!', description: 'Configurações do checkout atualizadas.' });
      } catch (error) {
@@ -420,42 +432,105 @@
              <CardHeader>
                <CardTitle className="text-lg flex items-center gap-2">
                  <ToggleLeft className="h-5 w-5 text-primary" strokeWidth={1.5} />
-                 Campos Obrigatórios
+                  Visibilidade e Obrigatoriedade
                </CardTitle>
                <CardDescription>
-                 Configure quais campos são obrigatórios no checkout
+                  Configure quais campos aparecem e são obrigatórios no checkout
                </CardDescription>
              </CardHeader>
              <CardContent className="space-y-6">
-               <div className="flex items-center justify-between p-4 rounded-lg border border-border/50">
-                 <div>
-                   <Label className="text-base">Nome e E-mail</Label>
-                   <p className="text-sm text-muted-foreground">Sempre obrigatórios</p>
-                 </div>
-                 <Switch checked disabled />
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Visibilidade dos Campos</h4>
+                  <p className="text-xs text-muted-foreground mb-4">Escolha quais campos aparecem no checkout (o campo Valor sempre aparece)</p>
                </div>
  
-               <div className="flex items-center justify-between p-4 rounded-lg border border-border/50">
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
                  <div>
-                   <Label htmlFor="requirePhone" className="text-base">Telefone</Label>
-                   <p className="text-sm text-muted-foreground">Exigir telefone para prosseguir</p>
+                    <Label htmlFor="showName" className="text-base">Nome</Label>
+                    <p className="text-sm text-muted-foreground">Mostrar campo de nome do cliente</p>
                  </div>
                  <Switch
-                   id="requirePhone"
-                   checked={requirePhone}
-                   onCheckedChange={setRequirePhone}
+                    id="showName"
+                    checked={showName}
+                    onCheckedChange={setShowName}
                  />
                </div>
  
-               <div className="flex items-center justify-between p-4 rounded-lg border border-border/50">
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
                  <div>
-                   <Label htmlFor="requireCpf" className="text-base">CPF</Label>
-                   <p className="text-sm text-muted-foreground">Exigir CPF para prosseguir</p>
+                    <Label htmlFor="showEmail" className="text-base">E-mail</Label>
+                    <p className="text-sm text-muted-foreground">Mostrar campo de e-mail do cliente</p>
                  </div>
                  <Switch
-                   id="requireCpf"
-                   checked={requireCpf}
-                   onCheckedChange={setRequireCpf}
+                    id="showEmail"
+                    checked={showEmail}
+                    onCheckedChange={setShowEmail}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
+                  <div>
+                    <Label htmlFor="showPhone" className="text-base">Telefone</Label>
+                    <p className="text-sm text-muted-foreground">Mostrar campo de telefone</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Switch
+                      id="showPhone"
+                      checked={showPhone}
+                      onCheckedChange={(checked) => {
+                        setShowPhone(checked);
+                        if (!checked) setRequirePhone(false);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
+                  <div>
+                    <Label htmlFor="showCpf" className="text-base">CPF</Label>
+                    <p className="text-sm text-muted-foreground">Mostrar campo de CPF</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Switch
+                      id="showCpf"
+                      checked={showCpf}
+                      onCheckedChange={(checked) => {
+                        setShowCpf(checked);
+                        if (!checked) setRequireCpf(false);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Obrigatoriedade */}
+                <div className="space-y-2 pt-4 border-t border-border/50">
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Campos Obrigatórios</h4>
+                  <p className="text-xs text-muted-foreground mb-4">Defina quais campos visíveis são obrigatórios para prosseguir</p>
+                </div>
+
+                <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 ${!showPhone ? 'opacity-50' : ''}`}>
+                  <div>
+                    <Label htmlFor="requirePhone" className="text-base">Telefone Obrigatório</Label>
+                    <p className="text-sm text-muted-foreground">Exigir telefone para gerar PIX</p>
+                  </div>
+                  <Switch
+                    id="requirePhone"
+                    checked={requirePhone}
+                    onCheckedChange={setRequirePhone}
+                    disabled={!showPhone}
+                  />
+                </div>
+
+                <div className={`flex items-center justify-between p-4 rounded-lg border border-border/50 ${!showCpf ? 'opacity-50' : ''}`}>
+                  <div>
+                    <Label htmlFor="requireCpf" className="text-base">CPF Obrigatório</Label>
+                    <p className="text-sm text-muted-foreground">Exigir CPF para gerar PIX</p>
+                  </div>
+                  <Switch
+                    id="requireCpf"
+                    checked={requireCpf}
+                    onCheckedChange={setRequireCpf}
+                    disabled={!showCpf}
                  />
                </div>
              </CardContent>

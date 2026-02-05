@@ -12,6 +12,10 @@
    require_phone: boolean;
    require_cpf: boolean;
    show_product_name: boolean;
+  show_name: boolean;
+  show_email: boolean;
+  show_phone: boolean;
+  show_cpf: boolean;
    custom_title: string | null;
    custom_description: string | null;
    success_message: string | null;
@@ -27,6 +31,10 @@
    require_phone: false,
    require_cpf: false,
    show_product_name: true,
+  show_name: true,
+  show_email: true,
+  show_phone: true,
+  show_cpf: true,
    custom_title: null,
    custom_description: null,
    success_message: null,
