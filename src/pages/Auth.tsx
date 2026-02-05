@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+ import { formatCPFOrCNPJ, formatPhone } from '@/lib/masks';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -225,7 +226,13 @@ export default function Auth() {
                           <FormControl>
                             <div className="relative">
                               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                              <Input {...field} placeholder="000.000.000-00" className="pl-10" />
+                           <Input 
+                             {...field} 
+                             placeholder="000.000.000-00" 
+                             className="pl-10"
+                             maxLength={18}
+                             onChange={(e) => field.onChange(formatCPFOrCNPJ(e.target.value))}
+                           />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -259,7 +266,13 @@ export default function Auth() {
                           <FormControl>
                             <div className="relative">
                               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                              <Input {...field} placeholder="(11) 99999-9999" className="pl-10" />
+                           <Input 
+                             {...field} 
+                             placeholder="(11) 99999-9999" 
+                             className="pl-10"
+                             maxLength={15}
+                             onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                           />
                             </div>
                           </FormControl>
                           <FormMessage />

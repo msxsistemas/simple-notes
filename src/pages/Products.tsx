@@ -51,6 +51,7 @@
    useDeleteProduct,
    Product,
  } from '@/hooks/useProducts';
+ import { formatCurrency, parseCurrency } from '@/lib/masks';
  
  const productSchema = z.object({
    name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -86,14 +87,14 @@
            id: editingProduct.id,
            name: data.name,
            description: data.description,
-           price: parseFloat(data.price),
+             price: parseCurrency(data.price),
          });
          toast({ title: 'Sucesso', description: 'Produto atualizado!' });
        } else {
          await createProduct.mutateAsync({
            name: data.name,
            description: data.description,
-           price: parseFloat(data.price),
+             price: parseCurrency(data.price),
            type: 'digital',
          });
          toast({ title: 'Sucesso', description: 'Produto criado!' });
@@ -110,7 +111,7 @@
      setEditingProduct(product);
      form.setValue('name', product.name);
      form.setValue('description', product.description || '');
-     form.setValue('price', product.price.toString());
+       form.setValue('price', product.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
      setIsCreateOpen(true);
    };
  
@@ -264,7 +265,13 @@
                        <FormItem>
                          <FormLabel>Preço (R$)</FormLabel>
                          <FormControl>
-                           <Input {...field} type="number" step="0.01" placeholder="0,00" />
+                             <Input 
+                               {...field} 
+                               type="text" 
+                               inputMode="decimal"
+                               placeholder="0,00"
+                               onChange={(e) => field.onChange(formatCurrency(e.target.value))}
+                             />
                          </FormControl>
                          <FormMessage />
                        </FormItem>

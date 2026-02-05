@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+ import { formatPhone, formatCPF, formatCurrency, parseCurrency } from '@/lib/masks';
 
 type PaymentStatus = 'idle' | 'loading' | 'pending' | 'approved' | 'cancelled' | 'expired';
 
@@ -153,7 +154,7 @@ export default function CheckoutPublic() {
             'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xc2Rrcm1nc2ZsaXNzd3J3a2FzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNTQ3MDgsImV4cCI6MjA4NTczMDcwOH0.LVIoQJEJx5TVTJF3kUbuvFuVIct9_0tI07z-JGh2cus',
           },
           body: JSON.stringify({
-            amount: parseFloat(amount),
+             amount: parseCurrency(amount),
             customerName,
             customerEmail,
             customerPhone: customerPhone || undefined,
@@ -280,12 +281,11 @@ export default function CheckoutPublic() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">R$</span>
                   <Input
                     id="amount"
-                    type="number"
-                    step="0.01"
-                    min="1"
+                     type="text"
+                     inputMode="decimal"
                     placeholder="0,00"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                     onChange={(e) => setAmount(formatCurrency(e.target.value))}
                     className="pl-10 text-lg font-semibold"
                     readOnly={!!productPrice}
                   />
@@ -317,7 +317,8 @@ export default function CheckoutPublic() {
                     id="phone"
                     placeholder="(11) 99999-9999"
                     value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
+                     onChange={(e) => setCustomerPhone(formatPhone(e.target.value))}
+                     maxLength={15}
                   />
                 </div>
                 <div className="space-y-2">
@@ -326,7 +327,8 @@ export default function CheckoutPublic() {
                     id="taxId"
                     placeholder="000.000.000-00"
                     value={customerTaxId}
-                    onChange={(e) => setCustomerTaxId(e.target.value)}
+                     onChange={(e) => setCustomerTaxId(formatCPF(e.target.value))}
+                     maxLength={14}
                   />
                 </div>
               </div>
@@ -362,7 +364,7 @@ export default function CheckoutPublic() {
               <div className="text-center p-4 rounded-xl bg-primary/5 border border-primary/20">
                 <p className="text-sm text-muted-foreground mb-1">Valor a pagar</p>
                 <p className="text-4xl font-bold text-primary">
-                  R$ {parseFloat(amount).toFixed(2)}
+                   R$ {amount || '0,00'}
                 </p>
                 <p className="text-sm text-warning mt-2 font-medium">
                   ⏱️ Expira em: {timeRemaining}
@@ -428,7 +430,7 @@ export default function CheckoutPublic() {
                   Obrigado, {customerName.split(' ')[0]}! 
                 </p>
                 <p className="text-lg font-semibold mt-2">
-                  R$ {parseFloat(amount).toFixed(2)}
+                   R$ {amount || '0,00'}
                 </p>
               </div>
               <div className="p-4 rounded-xl bg-muted/50 text-left text-sm space-y-1">

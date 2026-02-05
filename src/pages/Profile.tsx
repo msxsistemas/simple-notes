@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, Mail, Phone, FileText, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+ import { formatPhone } from '@/lib/masks';
 
 const profileSchema = z.object({
   full_name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -177,7 +178,14 @@ export default function Profile() {
                       <FormControl>
                         <div className="relative">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input {...field} disabled={!isEditing} className="pl-10" />
+                           <Input 
+                             {...field} 
+                             disabled={!isEditing} 
+                             className="pl-10"
+                             placeholder="(11) 99999-9999"
+                             maxLength={15}
+                             onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                           />
                         </div>
                       </FormControl>
                       <FormMessage />
