@@ -68,19 +68,18 @@ export function usePartnerProfile() {
 
 // Hook to get partner's commissions (transactions where they participated in split)
 export function usePartnerCommissions() {
-  const { user } = useAuth();
   const { data: partnerProfile } = usePartnerProfile();
 
   return useQuery({
-    queryKey: ['partner_commissions', partnerProfile?.id],
+    queryKey: ['partner_commissions', partnerProfile?.id, partnerProfile?.user_id],
     queryFn: async () => {
       if (!partnerProfile) return [];
 
-      // For now, we'll simulate commissions based on transactions
-      // In a real scenario, you'd have a separate commissions table
+      // Get transactions from the merchant (user_id) who created this partner
       const { data, error } = await (supabase
         .from('transactions' as any)
         .select('*')
+        .eq('user_id', partnerProfile.user_id) // Only transactions from the merchant
         .eq('status', 'approved')
         .order('created_at', { ascending: false }) as any);
 
