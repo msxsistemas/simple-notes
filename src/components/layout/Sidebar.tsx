@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -57,14 +57,20 @@ export function Sidebar() {
   const location = useLocation();
   const { logout, user, profile } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openMenus, setOpenMenus] = useState<string[]>(['Relatório']);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  // Auto-open the correct menu based on current route
+  useEffect(() => {
+    const currentMenu = navigation.find(item => 
+      'subItems' in item && item.subItems?.some(sub => location.pathname.startsWith(sub.href))
+    );
+    if (currentMenu) {
+      setOpenMenu(currentMenu.name);
+    }
+  }, [location.pathname]);
 
   const toggleMenu = (menuName: string) => {
-    setOpenMenus(prev => 
-      prev.includes(menuName) 
-        ? prev.filter(name => name !== menuName)
-        : [...prev, menuName]
-    );
+    setOpenMenu(prev => prev === menuName ? null : menuName);
   };
 
   return (
@@ -104,7 +110,7 @@ export function Sidebar() {
         <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
           {navigation.map((item) => {
             if ('subItems' in item && item.subItems) {
-              const isOpen = openMenus.includes(item.name);
+              const isOpen = openMenu === item.name;
               const isActive = item.subItems.some(sub => location.pathname.startsWith(sub.href));
               
               return (
@@ -136,9 +142,9 @@ export function Sidebar() {
                             key={subItem.name}
                             to={subItem.href}
                             className={cn(
-                              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors relative',
                               isSubActive
-                                ? 'text-sidebar-primary-foreground font-medium'
+                                ? 'bg-sidebar-accent text-sidebar-primary font-medium'
                                 : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                             )}
                           >
