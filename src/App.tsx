@@ -13,6 +13,7 @@ import Financial from "./pages/Financial";
 import Products from "./pages/Products";
 import Checkout from "./pages/Checkout";
 import CheckoutPublic from "./pages/CheckoutPublic";
+ import CheckoutConfig from "./pages/CheckoutConfig";
 import Integrations from "./pages/Integrations";
 import Fees from "./pages/Fees";
 import Docs from "./pages/Docs";
@@ -39,8 +40,8 @@ const App = () => (
             <Route path="/reports/withdrawals" element={<ReportsWithdrawals />} />
             <Route path="/financial" element={<Financial />} />
             <Route path="/products" element={<Products />} />
+             <Route path="/checkout" element={<CheckoutConfig />} />
             <Route path="/checkout/demo" element={<Checkout />} />
-            <Route path="/checkout" element={<CheckoutPublic />} />
             <Route path="/pay" element={<CheckoutPublic />} />
             <Route path="/integrations" element={<Integrations />} />
             <Route path="/fees" element={<Fees />} />
