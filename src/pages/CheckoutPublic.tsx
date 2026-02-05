@@ -51,7 +51,7 @@ export default function CheckoutPublic() {
   const merchantId = searchParams.get('merchant') || '';
 
    // Fetch checkout customization
-   const { config } = usePublicCheckoutConfig(merchantId);
+   const { config, isLoading: isConfigLoading } = usePublicCheckoutConfig(merchantId);
 
   // Pre-fill amount from URL
   useEffect(() => {
@@ -320,7 +320,14 @@ export default function CheckoutPublic() {
           {getStatusBadge()}
         </CardHeader>
         <CardContent className="space-y-6">
-          {status === 'idle' && (
+          {status === 'idle' && isConfigLoading && (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <p className="text-muted-foreground">Carregando checkout...</p>
+            </div>
+          )}
+
+          {status === 'idle' && !isConfigLoading && (
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="amount">Valor *</Label>
