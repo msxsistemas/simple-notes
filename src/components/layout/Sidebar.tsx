@@ -40,11 +40,17 @@ const navigation = [
   { name: 'Financeiro', href: '/financial', icon: Wallet },
   { name: 'Produtos', href: '/products', icon: Package },
   { name: 'Checkout', href: '/checkout/demo', icon: CreditCard },
-  { name: 'Integrações', href: '/integrations', icon: Link2 },
   { name: 'Taxas', href: '/fees', icon: Percent },
   { name: 'PIX Split', href: '/split', icon: Split },
-  { name: 'Documentação', href: '/docs', icon: BookOpen },
-  { name: 'Configurações', href: '/settings', icon: Settings },
+  { 
+    name: 'Configurações', 
+    icon: Settings,
+    subItems: [
+      { name: 'Geral', href: '/settings', icon: Settings },
+      { name: 'Integrações', href: '/integrations', icon: Link2 },
+      { name: 'Documentação', href: '/docs', icon: BookOpen },
+    ]
+  },
 ];
 
 export function Sidebar() {
