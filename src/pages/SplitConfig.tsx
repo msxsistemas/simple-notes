@@ -225,8 +225,8 @@ export default function SplitConfig() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-3 rounded-xl">
-                <Split className="h-6 w-6 text-primary" />
+              <div className="h-10 w-10 flex items-center justify-center border-2 border-primary rounded-full">
+                <Split className="h-5 w-5 text-primary" strokeWidth={1.5} />
               </div>
               <div>
                 <CardTitle>Configurar PIX Split</CardTitle>
@@ -253,11 +253,11 @@ export default function SplitConfig() {
         <Card className="border-border/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-3 rounded-xl">
-                <Users className="h-5 w-5 text-primary" />
+              <div className="h-7 w-7 flex items-center justify-center border-2 border-primary rounded-full">
+                <Users className="h-4 w-4 text-primary" strokeWidth={1.5} />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Parceiros Ativos</p>
+                <p className="text-sm text-muted-foreground font-bold">Parceiros Ativos</p>
                 <p className="text-2xl font-bold">
                   {partners?.filter(p => p.status === 'active').length || 0}
                 </p>
@@ -269,11 +269,11 @@ export default function SplitConfig() {
         <Card className="border-border/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="bg-warning/10 p-3 rounded-xl">
-                <Percent className="h-5 w-5 text-warning" />
+              <div className="h-7 w-7 flex items-center justify-center">
+                <Percent className="h-6 w-6 text-warning" strokeWidth={1.5} />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Percentual</p>
+                <p className="text-sm text-muted-foreground font-bold">Total Percentual</p>
                 <p className="text-2xl font-bold">{totalPercentage.toFixed(2)}%</p>
               </div>
             </div>
@@ -283,11 +283,11 @@ export default function SplitConfig() {
         <Card className="border-border/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="bg-success/10 p-3 rounded-xl">
-                <DollarSign className="h-5 w-5 text-success" />
+              <div className="h-7 w-7 flex items-center justify-center border-2 border-success rounded-full">
+                <DollarSign className="h-4 w-4 text-success" strokeWidth={1.5} />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Fixo/Venda</p>
+                <p className="text-sm text-muted-foreground font-bold">Total Fixo/Venda</p>
                 <p className="text-2xl font-bold">
                   R$ {totalFixed.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>

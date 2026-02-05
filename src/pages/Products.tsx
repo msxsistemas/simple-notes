@@ -160,11 +160,11 @@
          <Card className="border-border/50">
            <CardContent className="pt-6">
              <div className="flex items-center gap-4">
-               <div className="bg-primary/10 p-3 rounded-xl">
-                 <Package className="h-6 w-6 text-primary" />
+                <div className="h-7 w-7 flex items-center justify-center border-2 border-primary rounded-full">
+                  <Package className="h-4 w-4 text-primary" strokeWidth={1.5} />
                </div>
                <div>
-                 <p className="text-sm text-muted-foreground">Total de Produtos</p>
+                  <p className="text-sm text-muted-foreground font-bold">Total de Produtos</p>
                  <p className="text-2xl font-bold">{products?.length || 0}</p>
                </div>
              </div>
@@ -173,11 +173,11 @@
          <Card className="border-border/50">
            <CardContent className="pt-6">
              <div className="flex items-center gap-4">
-               <div className="bg-success/10 p-3 rounded-xl">
-                 <ShoppingCart className="h-6 w-6 text-success" />
+                <div className="h-7 w-7 flex items-center justify-center">
+                  <ShoppingCart className="h-6 w-6 text-success" strokeWidth={1.5} />
                </div>
                <div>
-                 <p className="text-sm text-muted-foreground">Vendas Totais</p>
+                  <p className="text-sm text-muted-foreground font-bold">Vendas Totais</p>
                  <p className="text-2xl font-bold">{totalSold}</p>
                </div>
              </div>
@@ -186,11 +186,11 @@
          <Card className="border-border/50">
            <CardContent className="pt-6">
              <div className="flex items-center gap-4">
-               <div className="bg-warning/10 p-3 rounded-xl">
-                 <TrendingUp className="h-6 w-6 text-warning" />
+                <div className="h-7 w-7 flex items-center justify-center border-2 border-success rounded-full">
+                  <TrendingUp className="h-4 w-4 text-success" strokeWidth={1.5} />
                </div>
                <div>
-                 <p className="text-sm text-muted-foreground">Receita Total</p>
+                  <p className="text-sm text-muted-foreground font-bold">Receita Total</p>
                  <p className="text-2xl font-bold">
                    R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                  </p>
