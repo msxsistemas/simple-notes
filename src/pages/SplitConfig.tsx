@@ -44,6 +44,8 @@ import {
   Mail,
   FileText,
   RefreshCw,
+  Link,
+  Copy,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFeeConfig } from '@/hooks/useFeeConfig';
@@ -487,7 +489,20 @@ export default function SplitConfig() {
                         onCheckedChange={() => handleTogglePartner(partner.id, partner.status)}
                       />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right flex gap-1 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-primary hover:text-primary"
+                        onClick={() => {
+                          const inviteUrl = `${window.location.origin}/partner/auth?partner=${partner.id}`;
+                          navigator.clipboard.writeText(inviteUrl);
+                          toast({ title: 'Link copiado!', description: 'Link de convite copiado para a área de transferência' });
+                        }}
+                        title="Copiar link de convite"
+                      >
+                        <Link className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
