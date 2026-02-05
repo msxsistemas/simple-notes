@@ -487,7 +487,7 @@
                </div>
  
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
-                 <div>
+                 <div className="flex-1">
                     <Label htmlFor="showName" className="text-base">Nome</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de nome do cliente</p>
                  </div>
@@ -499,7 +499,7 @@
                </div>
  
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
-                 <div>
+                 <div className="flex-1">
                     <Label htmlFor="showEmail" className="text-base">E-mail</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de e-mail do cliente</p>
                  </div>
@@ -511,37 +511,33 @@
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
-                  <div>
+                  <div className="flex-1">
                     <Label htmlFor="showPhone" className="text-base">Telefone</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de telefone</p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Switch
-                      id="showPhone"
-                      checked={showPhone}
-                      onCheckedChange={(checked) => {
-                        setShowPhone(checked);
-                        if (!checked) setRequirePhone(false);
-                      }}
-                    />
-                  </div>
+                  <Switch
+                    id="showPhone"
+                    checked={showPhone}
+                    onCheckedChange={(checked) => {
+                      setShowPhone(checked);
+                      if (!checked) setRequirePhone(false);
+                    }}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
-                  <div>
+                  <div className="flex-1">
                     <Label htmlFor="showCpf" className="text-base">CPF</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de CPF</p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Switch
-                      id="showCpf"
-                      checked={showCpf}
-                      onCheckedChange={(checked) => {
-                        setShowCpf(checked);
-                        if (!checked) setRequireCpf(false);
-                      }}
-                    />
-                  </div>
+                  <Switch
+                    id="showCpf"
+                    checked={showCpf}
+                    onCheckedChange={(checked) => {
+                      setShowCpf(checked);
+                      if (!checked) setRequireCpf(false);
+                    }}
+                  />
                 </div>
 
                 {/* Obrigatoriedade */}
