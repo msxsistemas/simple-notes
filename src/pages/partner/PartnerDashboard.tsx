@@ -1,14 +1,125 @@
 import { PartnerLayout } from '@/components/layout/PartnerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, TrendingUp, Receipt, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  Wallet, 
+  TrendingUp, 
+  DollarSign,
+  ShoppingCart,
+  Users,
+  Loader2,
+  Radio,
+} from 'lucide-react';
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  type ChartConfig,
+} from '@/components/ui/chart';
+import { AreaChart, Area, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
 import { usePartnerProfile, usePartnerCommissions, usePartnerBalance } from '@/hooks/usePartnerData';
+import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
+import { format, subMonths, startOfMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+const chartConfig: ChartConfig = {
+  sales: {
+    label: 'Vendas',
+    color: 'hsl(var(--chart-1))',
+  },
+  conversions: {
+    label: 'Transações',
+    color: 'hsl(var(--chart-2))',
+  },
+};
 
 export default function PartnerDashboard() {
+  const navigate = useNavigate();
   const { data: profile, isLoading: profileLoading } = usePartnerProfile();
   const { data: commissions, isLoading: commissionsLoading } = usePartnerCommissions();
   const balance = usePartnerBalance();
 
   const isLoading = profileLoading || commissionsLoading;
+
+  // Calculate monthly sales data for chart
+  const salesData = useMemo(() => {
+    if (!commissions) return [];
+    
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const date = subMonths(new Date(), 5 - i);
+      return {
+        month: format(date, 'MMM', { locale: ptBR }),
+        monthStart: startOfMonth(date),
+        sales: 0,
+        conversions: 0,
+      };
+    });
+
+    commissions.forEach((commission) => {
+      const txDate = new Date(commission.created_at);
+      const monthIndex = last6Months.findIndex(
+        (m) => txDate >= m.monthStart && txDate < subMonths(m.monthStart, -1)
+      );
+      if (monthIndex !== -1) {
+        last6Months[monthIndex].sales += Number(commission.commission_amount);
+        last6Months[monthIndex].conversions += 1;
+      }
+    });
+
+    return last6Months.map(({ month, sales, conversions }) => ({
+      month: month.charAt(0).toUpperCase() + month.slice(1),
+      sales,
+      conversions,
+    }));
+  }, [commissions]);
+
+  // Get recent commissions
+  const recentCommissions = useMemo(() => {
+    if (!commissions) return [];
+    return commissions.slice(0, 5).map((commission) => ({
+      id: commission.id,
+      customer: commission.customer_name,
+      amount: Number(commission.commission_amount),
+      saleAmount: Number(commission.amount),
+      time: getTimeAgo(new Date(commission.created_at)),
+    }));
+  }, [commissions]);
+
+  const totalSales = commissions?.length || 0;
+  const conversionRate = totalSales > 0 ? 100 : 0; // All commissions are from approved sales
+
+  const dashboardStats = [
+    {
+      title: 'Saldo Disponível',
+      value: formatCurrency(balance.availableBalance),
+      icon: Wallet,
+      hasBorder: true,
+      color: 'text-primary',
+      borderColor: 'border-primary',
+    },
+    {
+      title: 'Total Ganho',
+      value: formatCurrency(balance.totalEarned),
+      icon: DollarSign,
+      hasBorder: true,
+      color: 'text-success',
+      borderColor: 'border-success',
+    },
+    {
+      title: 'Vendas Totais',
+      value: totalSales.toString(),
+      icon: ShoppingCart,
+      hasBorder: false,
+      color: 'text-success',
+    },
+    {
+      title: 'Taxa de Conversão',
+      value: `${conversionRate}%`,
+      icon: TrendingUp,
+      hasBorder: false,
+      color: 'text-success',
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -20,52 +131,17 @@ export default function PartnerDashboard() {
     );
   }
 
-  const stats = [
-    {
-      title: 'Saldo Disponível',
-      value: formatCurrency(balance.availableBalance),
-      icon: Wallet,
-      color: 'text-primary',
-      borderColor: 'border-primary',
-    },
-    {
-      title: 'Total Ganho',
-      value: formatCurrency(balance.totalEarned),
-      icon: TrendingUp,
-      color: 'text-success',
-      borderColor: 'border-success',
-    },
-    {
-      title: 'Total Sacado',
-      value: formatCurrency(balance.totalWithdrawn),
-      icon: ArrowUpRight,
-      color: 'text-muted-foreground',
-      borderColor: 'border-muted',
-    },
-    {
-      title: 'Transações',
-      value: commissions?.length.toString() || '0',
-      icon: Receipt,
-      color: 'text-primary',
-      borderColor: 'border-primary',
-    },
-  ];
-
   return (
     <PartnerLayout title="Dashboard">
-      {/* Welcome */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground">
-          Olá, {profile?.name || 'Parceiro'}! 👋
-        </h2>
-        <p className="text-muted-foreground">
-          Acompanhe suas comissões e solicite saques.
-        </p>
+      {/* Realtime Indicator */}
+      <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+        <Radio className="h-4 w-4 text-success animate-pulse" />
+        <span>Atualização em tempo real ativa</span>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        {stats.map((stat) => (
+        {dashboardStats.map((stat) => (
           <Card key={stat.title} className="border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -73,80 +149,163 @@ export default function PartnerDashboard() {
                   <p className="text-sm text-muted-foreground font-bold">{stat.title}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
                 </div>
-                <div className={`h-7 w-7 flex items-center justify-center border-2 ${stat.borderColor} rounded-full`}>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} strokeWidth={1.5} />
-                </div>
+                {stat.hasBorder ? (
+                  <div className={`h-7 w-7 flex items-center justify-center border-2 ${stat.borderColor} rounded-full`}>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} strokeWidth={1.5} />
+                  </div>
+                ) : (
+                  <div className="h-7 w-7 flex items-center justify-center">
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} strokeWidth={1.5} />
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Partner Info */}
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-base">Seus Dados</CardTitle>
-          <CardDescription>Informações do seu cadastro</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-muted-foreground">Chave PIX</p>
-              <p className="font-medium">{profile?.pix_key || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">CPF/CNPJ</p>
-              <p className="font-medium">{profile?.document || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tipo de Split</p>
-              <p className="font-medium">
-                {profile?.split_type === 'percentage' ? 'Percentual' : 'Valor Fixo'}
+      {/* Charts */}
+      <div className="grid gap-6 lg:grid-cols-3 mb-6">
+        {/* Sales Chart - Takes 2 columns */}
+        <Card className="lg:col-span-2 border-0 shadow-sm bg-white dark:bg-card">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-base font-semibold text-foreground">Comissões</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <ChartContainer config={chartConfig} className="h-[280px] w-full">
+              <AreaChart data={salesData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4ade80" stopOpacity={0.5} />
+                    <stop offset="50%" stopColor="#4ade80" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#4ade80" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 600 }}
+                  dy={8}
+                  interval={0}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#6b7280', fontSize: 11, fontWeight: 600 }}
+                  tickFormatter={(value) => `R$${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  width={80}
+                />
+                <ChartTooltip 
+                  cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-md shadow-md px-3 py-2 min-w-[140px]">
+                          <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded mb-2 inline-block">
+                            {label}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="h-3 w-3 rounded-full bg-[#22c55e] flex-shrink-0" />
+                            <span className="text-xs text-gray-600 dark:text-muted-foreground">Comissões:</span>
+                            <span className="text-xs font-bold text-gray-900 dark:text-foreground">
+                              R${Number(payload[0].value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="sales"
+                  stroke="#22c55e"
+                  strokeWidth={2}
+                  fill="url(#salesGradient)"
+                  dot={false}
+                  activeDot={{ r: 5, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+                />
+              </AreaChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Conversion Donut Chart - Takes 1 column */}
+        <Card className="border-0 shadow-sm bg-white dark:bg-card">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-base font-semibold text-foreground">Conversão</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <div className="flex flex-col items-center justify-center h-[260px]">
+              <ChartContainer config={chartConfig} className="h-[140px] w-[140px]">
+                <PieChart>
+                  <Pie
+                    data={[{ name: 'PIX', value: 100 }]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={60}
+                    paddingAngle={0}
+                    dataKey="value"
+                    strokeWidth={0}
+                  >
+                    <Cell fill="#22c55e" />
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+              
+              {/* Legend */}
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
+                  <span className="text-xs text-gray-600 dark:text-muted-foreground">PIX</span>
+                </div>
+              </div>
+              
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-3 text-center">
+                Desempenho do método de pagamento
               </p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Valor do Split</p>
-              <p className="font-medium">
-                {profile?.split_type === 'percentage' 
-                  ? `${profile.split_value}%` 
-                  : formatCurrency(profile?.split_value || 0)}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Recent Commissions */}
-      <Card className="border-border/50 mt-6">
-        <CardHeader>
-          <CardTitle className="text-base">Últimas Comissões</CardTitle>
-          <CardDescription>Suas 5 últimas comissões</CardDescription>
+      <Card className="border-0 shadow-sm bg-white dark:bg-card">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold">Comissões Recentes</CardTitle>
+            <CardDescription>Últimas 5 comissões</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate('/partner/commissions')}>
+            Ver todas
+          </Button>
         </CardHeader>
         <CardContent>
-          {!commissions || commissions.length === 0 ? (
+          {recentCommissions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               Nenhuma comissão ainda
             </div>
           ) : (
             <div className="space-y-4">
-              {commissions.slice(0, 5).map((commission) => (
-                <div 
-                  key={commission.id} 
-                  className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
-                >
-                  <div>
-                    <p className="font-medium text-sm">{commission.customer_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Venda: {formatCurrency(commission.amount)}
-                    </p>
+              {recentCommissions.map((commission) => (
+                <div key={commission.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{commission.customer}</p>
+                      <p className="text-xs text-muted-foreground">{commission.time}</p>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-success">
-                      +{formatCurrency(commission.commission_amount)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(commission.created_at).toLocaleDateString('pt-BR')}
-                    </p>
+                    <p className="font-semibold text-success">+{formatCurrency(commission.amount)}</p>
+                    <span className="text-xs text-muted-foreground">
+                      Venda: {formatCurrency(commission.saleAmount)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -163,4 +322,17 @@ function formatCurrency(value: number): string {
     style: 'currency',
     currency: 'BRL',
   }).format(value);
+}
+
+function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return 'agora';
+  if (diffMins < 60) return `há ${diffMins} min`;
+  if (diffHours < 24) return `há ${diffHours}h`;
+  return `há ${diffDays}d`;
 }
