@@ -177,8 +177,25 @@ export function usePartnerWithdrawalRequest() {
       });
 
       if (error) {
-        console.error('Withdrawal error:', error);
-        throw new Error(error.message || 'Erro ao processar saque');
+        // supabase-js FunctionsError typically contains useful payload in error.context
+        const ctx: any = (error as any)?.context;
+        const ctxBody = ctx?.body;
+
+        let detailedMessage: string | undefined;
+        try {
+          const parsed = typeof ctxBody === 'string' ? JSON.parse(ctxBody) : ctxBody;
+          detailedMessage = parsed?.error || parsed?.message;
+          if (!detailedMessage && parsed?.details) {
+            detailedMessage = typeof parsed.details === 'string'
+              ? parsed.details
+              : JSON.stringify(parsed.details);
+          }
+        } catch {
+          // ignore JSON parse errors
+        }
+
+        console.error('Withdrawal error:', { error, context: ctx });
+        throw new Error(detailedMessage || error.message || 'Erro ao processar saque');
       }
 
       if (!data.success) {
