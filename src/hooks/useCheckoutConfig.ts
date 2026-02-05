@@ -39,6 +39,27 @@
    custom_description: null,
    success_message: null,
  };
+
+function mergeWithDefaults(
+  config: Partial<CheckoutConfig> | null | undefined,
+): Omit<CheckoutConfig, 'id' | 'user_id' | 'created_at' | 'updated_at'> {
+  return {
+    logo_url: config?.logo_url ?? defaultConfig.logo_url,
+    primary_color: config?.primary_color ?? defaultConfig.primary_color,
+    background_color: config?.background_color ?? defaultConfig.background_color,
+    text_color: config?.text_color ?? defaultConfig.text_color,
+    require_phone: config?.require_phone ?? defaultConfig.require_phone,
+    require_cpf: config?.require_cpf ?? defaultConfig.require_cpf,
+    show_product_name: config?.show_product_name ?? defaultConfig.show_product_name,
+    show_name: config?.show_name ?? defaultConfig.show_name,
+    show_email: config?.show_email ?? defaultConfig.show_email,
+    show_phone: config?.show_phone ?? defaultConfig.show_phone,
+    show_cpf: config?.show_cpf ?? defaultConfig.show_cpf,
+    custom_title: config?.custom_title ?? defaultConfig.custom_title,
+    custom_description: config?.custom_description ?? defaultConfig.custom_description,
+    success_message: config?.success_message ?? defaultConfig.success_message,
+  };
+}
  
  export function useCheckoutConfig() {
    const { user } = useAuth();
@@ -83,7 +104,7 @@
    });
  
    return {
-     config: config ? { ...defaultConfig, ...config } : defaultConfig,
+    config: mergeWithDefaults(config ?? undefined),
      isLoading,
      updateConfig: upsertMutation.mutateAsync,
      isUpdating: upsertMutation.isPending,
@@ -110,7 +131,7 @@
    });
  
    return {
-     config: config ? { ...defaultConfig, ...config } : defaultConfig,
+    config: mergeWithDefaults(config ?? undefined),
      isLoading,
    };
  }
