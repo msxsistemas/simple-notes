@@ -26,17 +26,28 @@ export function Header({ title }: HeaderProps) {
 
       <div className="flex items-center gap-4">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative rounded-full">
+              <Bell className="h-5 w-5" strokeWidth={1.5} />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-72">
+            <DropdownMenuLabel>Notificações</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <div className="py-4 text-center text-sm text-muted-foreground">
+              Nenhuma notificação no momento
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
+                <User className="h-5 w-5 text-primary" strokeWidth={1.5} />
               </div>
             </Button>
           </DropdownMenuTrigger>
