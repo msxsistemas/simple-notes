@@ -183,15 +183,28 @@ export function usePartnerWithdrawalRequest() {
 
         let detailedMessage: string | undefined;
         try {
-          const parsed = typeof ctxBody === 'string' ? JSON.parse(ctxBody) : ctxBody;
+          let parsed: any = undefined;
+
+          if (typeof ctxBody === 'string') {
+            parsed = JSON.parse(ctxBody);
+          } else if (ctxBody && typeof (ctxBody as any).getReader === 'function') {
+            // ReadableStream (common in fetch responses)
+            parsed = await new Response(ctxBody).json();
+          } else if (ctxBody instanceof ArrayBuffer) {
+            parsed = JSON.parse(new TextDecoder().decode(new Uint8Array(ctxBody)));
+          } else if (ctxBody instanceof Uint8Array) {
+            parsed = JSON.parse(new TextDecoder().decode(ctxBody));
+          } else if (ctxBody && typeof ctxBody === 'object') {
+            parsed = ctxBody;
+          }
+
           detailedMessage = parsed?.error || parsed?.message;
           if (!detailedMessage && parsed?.details) {
-            detailedMessage = typeof parsed.details === 'string'
-              ? parsed.details
-              : JSON.stringify(parsed.details);
+            if (typeof parsed.details === 'string') detailedMessage = parsed.details;
+            else detailedMessage = parsed.details?.error || parsed.details?.message || JSON.stringify(parsed.details);
           }
         } catch {
-          // ignore JSON parse errors
+          // ignore parse errors
         }
 
         console.error('Withdrawal error:', { error, context: ctx });
