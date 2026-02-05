@@ -1,4 +1,4 @@
- import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
  import { DashboardLayout } from '@/components/layout/DashboardLayout';
  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -66,24 +66,30 @@
      toast({ title: 'Configurações restauradas', description: 'Clique em Salvar para aplicar as configurações padrão.' });
    };
    
-   // Sync form state with config
-   useEffect(() => {
-     if (config) {
-       setLogoUrl(config.logo_url || '');
-       setPrimaryColor(config.primary_color);
-       setBackgroundColor(config.background_color);
-       setTextColor(config.text_color);
-       setRequirePhone(config.require_phone);
-       setRequireCpf(config.require_cpf);
-       setCustomTitle(config.custom_title || '');
-       setCustomDescription(config.custom_description || '');
-       setSuccessMessage(config.success_message || '');
-      setShowName(config.show_name);
-      setShowEmail(config.show_email);
-      setShowPhone(config.show_phone);
-      setShowCpf(config.show_cpf);
-     }
-   }, [config]);
+  // Sync form state with config (only when it actually changes on the server)
+  const lastSyncedUpdatedAtRef = useRef<string | null>(null);
+  useEffect(() => {
+    // `config` is always present (defaults) - only sync when remote updated_at changes.
+    const updatedAt = (config as any)?.updated_at as string | undefined;
+    if (!updatedAt) return;
+    if (lastSyncedUpdatedAtRef.current === updatedAt) return;
+
+    lastSyncedUpdatedAtRef.current = updatedAt;
+
+    setLogoUrl(config.logo_url || '');
+    setPrimaryColor(config.primary_color);
+    setBackgroundColor(config.background_color);
+    setTextColor(config.text_color);
+    setRequirePhone(config.require_phone);
+    setRequireCpf(config.require_cpf);
+    setCustomTitle(config.custom_title || '');
+    setCustomDescription(config.custom_description || '');
+    setSuccessMessage(config.success_message || '');
+    setShowName(config.show_name);
+    setShowEmail(config.show_email);
+    setShowPhone(config.show_phone);
+    setShowCpf(config.show_cpf);
+  }, [config]);
    
    // URL base do checkout público
    const baseUrl = window.location.origin;
@@ -486,7 +492,15 @@
                   <p className="text-xs text-muted-foreground mb-4">Escolha quais campos aparecem no checkout (o campo Valor sempre aparece)</p>
                </div>
  
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowName((v) => !v)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') setShowName((v) => !v);
+                  }}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30 cursor-pointer select-none"
+                >
                  <div className="flex-1">
                     <Label htmlFor="showName" className="text-base">Nome</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de nome do cliente</p>
@@ -495,10 +509,20 @@
                     id="showName"
                     checked={showName}
                     onCheckedChange={setShowName}
+                     className="relative z-10"
+                     onClick={(e) => e.stopPropagation()}
                  />
                </div>
  
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowEmail((v) => !v)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') setShowEmail((v) => !v);
+                  }}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30 cursor-pointer select-none"
+                >
                  <div className="flex-1">
                     <Label htmlFor="showEmail" className="text-base">E-mail</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de e-mail do cliente</p>
@@ -507,10 +531,32 @@
                     id="showEmail"
                     checked={showEmail}
                     onCheckedChange={setShowEmail}
+                     className="relative z-10"
+                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setShowPhone((v) => {
+                      const next = !v;
+                      if (!next) setRequirePhone(false);
+                      return next;
+                    });
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setShowPhone((v) => {
+                        const next = !v;
+                        if (!next) setRequirePhone(false);
+                        return next;
+                      });
+                    }
+                  }}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30 cursor-pointer select-none"
+                >
                   <div className="flex-1">
                     <Label htmlFor="showPhone" className="text-base">Telefone</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de telefone</p>
@@ -522,10 +568,32 @@
                       setShowPhone(checked);
                       if (!checked) setRequirePhone(false);
                     }}
+                    className="relative z-10"
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setShowCpf((v) => {
+                      const next = !v;
+                      if (!next) setRequireCpf(false);
+                      return next;
+                    });
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setShowCpf((v) => {
+                        const next = !v;
+                        if (!next) setRequireCpf(false);
+                        return next;
+                      });
+                    }
+                  }}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/30 cursor-pointer select-none"
+                >
                   <div className="flex-1">
                     <Label htmlFor="showCpf" className="text-base">CPF</Label>
                     <p className="text-sm text-muted-foreground">Mostrar campo de CPF</p>
@@ -537,6 +605,8 @@
                       setShowCpf(checked);
                       if (!checked) setRequireCpf(false);
                     }}
+                    className="relative z-10"
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </div>
 
