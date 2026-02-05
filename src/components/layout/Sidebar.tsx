@@ -39,7 +39,7 @@ const navigation = [
   },
   { name: 'Financeiro', href: '/financial', icon: Wallet },
   { name: 'Produtos', href: '/products', icon: Package },
-   { name: 'Checkout', href: '/checkout/demo', icon: CreditCard, exact: true },
+   { name: 'Checkout', href: '/checkout', icon: CreditCard },
   { name: 'Taxas', href: '/fees', icon: Percent },
   { name: 'PIX Split', href: '/split', icon: Split },
   { 
@@ -160,16 +160,13 @@ export function Sidebar() {
             }
             
             const isActive = location.pathname.startsWith(item.href);
-             const isActiveExact = 'exact' in item && item.exact 
-               ? location.pathname === item.href 
-               : location.pathname.startsWith(item.href);
              return (
               <NavLink
                 key={item.name}
                 to={item.href}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                   isActiveExact
+                   isActive
                     ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                     : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                 )}
