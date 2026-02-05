@@ -319,47 +319,57 @@ export default function CheckoutPublic() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo *</Label>
-                <Input
-                  id="name"
-                  placeholder="Seu nome completo"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+              {config.show_name && (
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone</Label>
+                  <Label htmlFor="name">Nome completo *</Label>
                   <Input
-                    id="phone"
-                    placeholder="(11) 99999-9999"
-                    value={customerPhone}
-                     onChange={(e) => setCustomerPhone(formatPhone(e.target.value))}
-                     maxLength={15}
+                    id="name"
+                    placeholder="Seu nome completo"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
                   />
                 </div>
+              )}
+              {config.show_email && (
                 <div className="space-y-2">
-                  <Label htmlFor="taxId">CPF</Label>
+                  <Label htmlFor="email">E-mail *</Label>
                   <Input
-                    id="taxId"
-                    placeholder="000.000.000-00"
-                    value={customerTaxId}
-                     onChange={(e) => setCustomerTaxId(formatCPF(e.target.value))}
-                     maxLength={14}
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
                   />
                 </div>
-              </div>
+              )}
+              {(config.show_phone || config.show_cpf) && (
+                <div className="grid grid-cols-2 gap-3">
+                  {config.show_phone && (
+                    <div className={`space-y-2 ${!config.show_cpf ? 'col-span-2' : ''}`}>
+                      <Label htmlFor="phone">Telefone{config.require_phone ? ' *' : ''}</Label>
+                      <Input
+                        id="phone"
+                        placeholder="(11) 99999-9999"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(formatPhone(e.target.value))}
+                        maxLength={15}
+                      />
+                    </div>
+                  )}
+                  {config.show_cpf && (
+                    <div className={`space-y-2 ${!config.show_phone ? 'col-span-2' : ''}`}>
+                      <Label htmlFor="taxId">CPF{config.require_cpf ? ' *' : ''}</Label>
+                      <Input
+                        id="taxId"
+                        placeholder="000.000.000-00"
+                        value={customerTaxId}
+                        onChange={(e) => setCustomerTaxId(formatCPF(e.target.value))}
+                        maxLength={14}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
                {/* Validation messages */}
                {config.require_phone && !customerPhone && (
                  <p className="text-xs text-muted-foreground">* Telefone obrigatório</p>
@@ -372,8 +382,8 @@ export default function CheckoutPublic() {
                  onClick={handleGeneratePix}
                  disabled={
                    !amount || 
-                   !customerName || 
-                   !customerEmail || 
+                    (config.show_name && !customerName) || 
+                    (config.show_email && !customerEmail) || 
                    (config.require_phone && !customerPhone) ||
                    (config.require_cpf && !customerTaxId)
                  }

@@ -49,6 +49,10 @@ export type Database = {
           primary_color: string | null
           require_cpf: boolean | null
           require_phone: boolean | null
+          show_cpf: boolean | null
+          show_email: boolean | null
+          show_name: boolean | null
+          show_phone: boolean | null
           show_product_name: boolean | null
           success_message: string | null
           text_color: string | null
@@ -65,6 +69,10 @@ export type Database = {
           primary_color?: string | null
           require_cpf?: boolean | null
           require_phone?: boolean | null
+          show_cpf?: boolean | null
+          show_email?: boolean | null
+          show_name?: boolean | null
+          show_phone?: boolean | null
           show_product_name?: boolean | null
           success_message?: string | null
           text_color?: string | null
@@ -81,6 +89,10 @@ export type Database = {
           primary_color?: string | null
           require_cpf?: boolean | null
           require_phone?: boolean | null
+          show_cpf?: boolean | null
+          show_email?: boolean | null
+          show_name?: boolean | null
+          show_phone?: boolean | null
           show_product_name?: boolean | null
           success_message?: string | null
           text_color?: string | null
