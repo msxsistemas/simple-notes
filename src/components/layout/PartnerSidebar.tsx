@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   FileText,
   Wallet,
+  Package,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -11,6 +12,7 @@ import {
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
+  Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,20 +24,20 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 
-import { Package } from 'lucide-react';
-
 const navigation = [
   { name: 'Dashboard', href: '/partner', icon: LayoutDashboard },
   { 
     name: 'Relatório', 
     icon: FileText,
     subItems: [
-      { name: 'Comissões', href: '/partner/commissions', icon: ArrowUpRight },
-      { name: 'Saques', href: '/partner/withdrawals', icon: ArrowDownRight },
+      { name: 'Entradas', href: '/partner/reports/entries', icon: ArrowUpRight },
+      { name: 'Saídas', href: '/partner/reports/withdrawals', icon: ArrowDownRight },
     ]
   },
-  { name: 'Financeiro', href: '/partner/withdrawals', icon: Wallet },
+  { name: 'Financeiro', href: '/partner/financial', icon: Wallet },
   { name: 'Produtos', href: '/partner/products', icon: Package },
+  { name: 'Checkout', href: '/partner/checkout', icon: CreditCard },
+  { name: 'Configurações', href: '/partner/settings', icon: Settings },
 ];
 
 export function PartnerSidebar() {

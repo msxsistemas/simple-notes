@@ -29,6 +29,10 @@ import PartnerWithdrawals from "./pages/partner/PartnerWithdrawals";
 import PartnerSettings from "./pages/partner/PartnerSettings";
 import PartnerProducts from "./pages/partner/PartnerProducts";
 import PartnerCheckoutPublic from "./pages/PartnerCheckoutPublic";
+import PartnerFinancial from "./pages/partner/PartnerFinancial";
+import PartnerReportsEntries from "./pages/partner/PartnerReportsEntries";
+import PartnerReportsWithdrawals from "./pages/partner/PartnerReportsWithdrawals";
+import PartnerCheckout from "./pages/partner/PartnerCheckout";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +69,10 @@ const App = () => (
             <Route path="/partner/withdrawals" element={<PartnerWithdrawals />} />
             <Route path="/partner/settings" element={<PartnerSettings />} />
             <Route path="/partner/products" element={<PartnerProducts />} />
+            <Route path="/partner/financial" element={<PartnerFinancial />} />
+            <Route path="/partner/reports/entries" element={<PartnerReportsEntries />} />
+            <Route path="/partner/reports/withdrawals" element={<PartnerReportsWithdrawals />} />
+            <Route path="/partner/checkout" element={<PartnerCheckout />} />
             
             {/* Partner public checkout */}
             <Route path="/partner-pay/:partnerId/:productId" element={<PartnerCheckoutPublic />} />
