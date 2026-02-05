@@ -20,6 +20,7 @@
    ToggleLeft,
    Save,
    Loader2,
+   RotateCcw,
  } from 'lucide-react';
  import { Switch } from '@/components/ui/switch';
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -47,6 +48,23 @@
   const [showEmail, setShowEmail] = useState(true);
   const [showPhone, setShowPhone] = useState(true);
   const [showCpf, setShowCpf] = useState(true);
+   
+   const handleResetToDefaults = () => {
+     setLogoUrl('');
+     setPrimaryColor('#8B5CF6');
+     setBackgroundColor('#0F0F23');
+     setTextColor('#FFFFFF');
+     setRequirePhone(false);
+     setRequireCpf(false);
+     setCustomTitle('');
+     setCustomDescription('');
+     setSuccessMessage('');
+     setShowName(true);
+     setShowEmail(true);
+     setShowPhone(true);
+     setShowCpf(true);
+     toast({ title: 'Configurações restauradas', description: 'Clique em Salvar para aplicar as configurações padrão.' });
+   };
    
    // Sync form state with config
    useEffect(() => {
@@ -438,7 +456,11 @@
              </Card>
            </div>
  
-           <div className="flex justify-end">
+           <div className="flex justify-between">
+             <Button variant="outline" onClick={handleResetToDefaults} className="gap-2">
+               <RotateCcw className="h-4 w-4" />
+               Restaurar Padrão
+             </Button>
              <Button onClick={handleSave} disabled={isUpdating} className="gap-2">
                {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                Salvar Configurações
@@ -556,7 +578,11 @@
              </CardContent>
            </Card>
  
-           <div className="flex justify-end">
+           <div className="flex justify-between">
+             <Button variant="outline" onClick={handleResetToDefaults} className="gap-2">
+               <RotateCcw className="h-4 w-4" />
+               Restaurar Padrão
+             </Button>
              <Button onClick={handleSave} disabled={isUpdating} className="gap-2">
                {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                Salvar Configurações
