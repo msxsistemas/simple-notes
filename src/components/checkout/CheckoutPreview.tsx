@@ -83,7 +83,7 @@
  
            {showName && (
              <div className="space-y-1">
-              <Label className="text-xs">Nome completo</Label>
+               <Label className="text-xs">Nome completo *</Label>
                <Input
                  placeholder="Seu nome completo"
                  className="h-8 text-xs"
@@ -94,7 +94,7 @@
  
            {showEmail && (
              <div className="space-y-1">
-              <Label className="text-xs">E-mail</Label>
+               <Label className="text-xs">E-mail *</Label>
                <Input
                  placeholder="seu@email.com"
                  className="h-8 text-xs"
