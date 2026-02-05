@@ -158,7 +158,7 @@ export function useUpdatePartnerPixData() {
   });
 }
 
-// Hook to request withdrawal as partner
+// Hook to request withdrawal as partner - processes real PIX withdrawal via Woovi
 export function usePartnerWithdrawalRequest() {
   const queryClient = useQueryClient();
   const { data: partnerProfile } = usePartnerProfile();
@@ -167,27 +167,29 @@ export function usePartnerWithdrawalRequest() {
     mutationFn: async ({ amount, fee }: { amount: number; fee: number }) => {
       if (!partnerProfile) throw new Error('Partner profile not found');
 
-      const { data, error } = await (supabase
-        .from('withdrawals' as any)
-        .insert({
-          partner_id: partnerProfile.id,
-          user_id: partnerProfile.user_id, // Owner's user_id for RLS
-          recipient_name: partnerProfile.name,
-          document: partnerProfile.document || '',
-          pix_key: partnerProfile.pix_key,
-          amount,
-          fee,
-          total: amount - fee,
-          status: 'pending',
-        } as any)
-        .select()
-        .single() as any);
+      // Get the current session for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('User not authenticated');
 
-      if (error) throw error;
-      return data;
+      // Call edge function to process real withdrawal
+      const { data, error } = await supabase.functions.invoke('process-partner-withdrawal', {
+        body: { amount, fee },
+      });
+
+      if (error) {
+        console.error('Withdrawal error:', error);
+        throw new Error(error.message || 'Erro ao processar saque');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Erro ao processar saque');
+      }
+
+      return data.withdrawal;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['partner_withdrawals'] });
+      queryClient.invalidateQueries({ queryKey: ['partner_commissions'] });
     },
   });
 }
