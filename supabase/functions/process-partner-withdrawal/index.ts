@@ -122,38 +122,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // If there's a fee, debit it from subaccount to main account
-    let feeDebitResult = null;
-    if (fee && fee > 0) {
-      const feeInCents = Math.round(fee * 100);
-      console.log(`Debiting fee of ${feeInCents} cents from subaccount ${pixKey} to main account`);
-      
-      const feeDebitResponse = await fetch(
-        `https://api.woovi.com/api/v1/subaccount/${pixKey}/debit`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization": wooviApiKey,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            value: feeInCents,
-            description: `Taxa de saque - ID: ${withdrawal.id}`,
-          }),
-        }
-      );
-
-      feeDebitResult = await feeDebitResponse.json();
-      console.log("Fee debit response:", JSON.stringify(feeDebitResult));
-
-      if (!feeDebitResponse.ok) {
-        console.error("Fee debit failed (withdrawal already processed):", feeDebitResult);
-        // Note: We don't fail the withdrawal if fee debit fails, just log it
-        // The withdrawal itself was successful
-      } else {
-        console.log(`Fee of R$ ${fee} successfully debited to main account`);
-      }
-    }
+    // Note: The fee is automatically deducted by Woovi from the withdrawal amount
+    // The partner receives (amount - fee) and the fee stays in the main Woovi account
+    console.log(`Withdrawal processed. Fee of R$ ${fee} automatically retained by Woovi.`);
 
     await supabase
       .from("withdrawals")
@@ -167,7 +138,6 @@ Deno.serve(async (req) => {
         success: true, 
         withdrawal: { ...withdrawal, status: "completed" }, 
         transaction: wooviResult.transaction,
-        feeDebit: feeDebitResult,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
