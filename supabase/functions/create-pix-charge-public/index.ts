@@ -256,13 +256,24 @@ Deno.serve(async (req) => {
     };
 
    // Add customer info only if provided
-   if (customerName || customerEmail || customerPhone || customerTaxId) {
-     chargePayload.customer = {
+   // Woovi requires at least one identifier (email, phone, or taxID) in the customer object
+   // Only send customer object if we have at least one valid identifier
+   const hasEmail = customerEmail && customerEmail.trim().length > 0;
+   const hasPhone = customerPhone && customerPhone.replace(/\D/g, "").length >= 10;
+   const hasTaxId = customerTaxId && customerTaxId.replace(/\D/g, "").length >= 11;
+   
+   if (hasEmail || hasPhone || hasTaxId) {
+     const customerObj: Record<string, unknown> = {
        name: customerName || 'Cliente',
-       email: customerEmail || undefined,
-       phone: customerPhone?.replace(/\D/g, "") || undefined,
-       taxID: customerTaxId?.replace(/\D/g, "") || undefined,
      };
+     if (hasEmail) customerObj.email = customerEmail.trim();
+     if (hasPhone) customerObj.phone = customerPhone.replace(/\D/g, "");
+     if (hasTaxId) customerObj.taxID = customerTaxId.replace(/\D/g, "");
+     
+     chargePayload.customer = customerObj;
+     console.log("Customer object:", JSON.stringify(customerObj));
+   } else {
+     console.log("No valid customer identifier provided, creating charge without customer object");
    }
  
     // Add splits if available
