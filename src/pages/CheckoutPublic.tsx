@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Check, Copy, QrCode, Clock, CheckCircle, XCircle, Smartphone, Loader2 } from 'lucide-react';
+ import { Check, Copy, QrCode, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
  import { formatPhone, formatCPF, formatCurrency, parseCurrency } from '@/lib/masks';
+ import { usePublicCheckoutConfig } from '@/hooks/useCheckoutConfig';
 
 type PaymentStatus = 'idle' | 'loading' | 'pending' | 'approved' | 'cancelled' | 'expired';
 
@@ -48,6 +49,9 @@ export default function CheckoutPublic() {
   const productName = searchParams.get('product') || '';
   const productPrice = searchParams.get('price') || '';
   const merchantId = searchParams.get('merchant') || '';
+
+   // Fetch checkout customization
+   const { config } = usePublicCheckoutConfig(merchantId);
 
   // Pre-fill amount from URL
   useEffect(() => {
@@ -257,18 +261,42 @@ export default function CheckoutPublic() {
     }
   };
 
+   // Custom styles based on config
+   const customStyles = {
+     '--checkout-primary': config.primary_color,
+     '--checkout-bg': config.background_color,
+     '--checkout-text': config.text_color,
+   } as React.CSSProperties;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+     <div 
+       className="min-h-screen flex items-center justify-center p-4"
+       style={{ 
+         ...customStyles,
+         background: `linear-gradient(135deg, ${config.background_color} 0%, ${config.background_color}ee 50%, ${config.primary_color}22 100%)`,
+       }}
+     >
       <Card className="w-full max-w-md border-border/50 shadow-2xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-14 w-14 rounded-2xl gradient-primary flex items-center justify-center shadow-lg">
-            <Smartphone className="h-7 w-7 text-white" />
-          </div>
+           {config.logo_url ? (
+             <img 
+               src={config.logo_url} 
+               alt="Logo" 
+               className="mx-auto mb-4 h-14 w-auto max-w-[200px] object-contain"
+             />
+           ) : (
+             <div 
+               className="mx-auto mb-4 h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg"
+               style={{ backgroundColor: config.primary_color }}
+             >
+               <QrCode className="h-7 w-7 text-white" />
+             </div>
+           )}
           <CardTitle className="text-2xl font-bold">
-            {productName || 'Checkout PIX'}
+             {productName || config.custom_title || 'Checkout PIX'}
           </CardTitle>
           <CardDescription>
-            Pagamento instantâneo e seguro via PIX
+             {config.custom_description || 'Pagamento instantâneo e seguro via PIX'}
           </CardDescription>
           {getStatusBadge()}
         </CardHeader>
@@ -332,9 +360,25 @@ export default function CheckoutPublic() {
                   />
                 </div>
               </div>
-              <Button 
-                onClick={handleGeneratePix} 
-                className="w-full gradient-primary text-lg py-6 shadow-lg hover:shadow-xl transition-all"
+               {/* Validation messages */}
+               {config.require_phone && !customerPhone && (
+                 <p className="text-xs text-muted-foreground">* Telefone obrigatório</p>
+               )}
+               {config.require_cpf && !customerTaxId && (
+                 <p className="text-xs text-muted-foreground">* CPF obrigatório</p>
+               )}
+ 
+               <Button
+                 onClick={handleGeneratePix}
+                 disabled={
+                   !amount || 
+                   !customerName || 
+                   !customerEmail || 
+                   (config.require_phone && !customerPhone) ||
+                   (config.require_cpf && !customerTaxId)
+                 }
+                 className="w-full text-lg py-6 shadow-lg hover:shadow-xl transition-all"
+                 style={{ backgroundColor: config.primary_color }}
               >
                 Pagar com PIX
               </Button>
@@ -425,7 +469,9 @@ export default function CheckoutPublic() {
                 <CheckCircle className="h-12 w-12 text-success" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-success mb-2">Pagamento Confirmado!</h3>
+                 <h3 className="text-2xl font-bold text-success mb-2">
+                   {config.success_message || 'Pagamento Confirmado!'}
+                 </h3>
                 <p className="text-muted-foreground">
                   Obrigado, {customerName.split(' ')[0]}! 
                 </p>
