@@ -1,4 +1,5 @@
- import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
  import { supabase } from '@/integrations/supabase/client';
  import { useAuth } from '@/contexts/AuthContext';
  
@@ -102,9 +103,32 @@ function mergeWithDefaults(
        queryClient.invalidateQueries({ queryKey: ['checkout-config'] });
      },
    });
+
+  const mergedConfig = useMemo(() => {
+    // IMPORTANT: avoid recreating a new object on every render,
+    // otherwise pages syncing local form state from `config` will reset user interactions.
+    return mergeWithDefaults(config ?? undefined);
+  }, [
+    config?.id,
+    config?.updated_at,
+    config?.logo_url,
+    config?.primary_color,
+    config?.background_color,
+    config?.text_color,
+    config?.require_phone,
+    config?.require_cpf,
+    config?.show_product_name,
+    config?.show_name,
+    config?.show_email,
+    config?.show_phone,
+    config?.show_cpf,
+    config?.custom_title,
+    config?.custom_description,
+    config?.success_message,
+  ]);
  
    return {
-    config: mergeWithDefaults(config ?? undefined),
+    config: mergedConfig,
      isLoading,
      updateConfig: upsertMutation.mutateAsync,
      isUpdating: upsertMutation.isPending,
@@ -129,9 +153,30 @@ function mergeWithDefaults(
      },
      enabled: !!merchantId,
    });
+
+  const mergedConfig = useMemo(() => {
+    return mergeWithDefaults(config ?? undefined);
+  }, [
+    config?.id,
+    config?.updated_at,
+    config?.logo_url,
+    config?.primary_color,
+    config?.background_color,
+    config?.text_color,
+    config?.require_phone,
+    config?.require_cpf,
+    config?.show_product_name,
+    config?.show_name,
+    config?.show_email,
+    config?.show_phone,
+    config?.show_cpf,
+    config?.custom_title,
+    config?.custom_description,
+    config?.success_message,
+  ]);
  
    return {
-    config: mergeWithDefaults(config ?? undefined),
+    config: mergedConfig,
      isLoading,
    };
  }
