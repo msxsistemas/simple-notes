@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+ import { formatPhone, formatCPFOrCNPJ, formatCurrency, parseCurrency } from '@/lib/masks';
 
 type PaymentStatus = 'idle' | 'loading' | 'pending' | 'approved' | 'cancelled' | 'expired';
 
@@ -139,7 +140,7 @@ export default function Checkout() {
 
       const response = await supabase.functions.invoke<ChargeResponse>('create-pix-charge', {
         body: {
-          amount: parseFloat(amount),
+           amount: parseCurrency(amount),
           customerName,
           customerEmail,
           customerPhone: customerPhone || undefined,
@@ -276,12 +277,11 @@ export default function Checkout() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
                   <Input
                     id="amount"
-                    type="number"
-                    step="0.01"
-                    min="1"
+                     type="text"
+                     inputMode="decimal"
                     placeholder="0,00"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                     onChange={(e) => setAmount(formatCurrency(e.target.value))}
                     className="pl-10"
                   />
                 </div>
@@ -311,7 +311,8 @@ export default function Checkout() {
                   id="phone"
                   placeholder="(11) 99999-9999"
                   value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
+                   onChange={(e) => setCustomerPhone(formatPhone(e.target.value))}
+                   maxLength={15}
                 />
               </div>
               <div className="space-y-2">
@@ -320,7 +321,8 @@ export default function Checkout() {
                   id="taxId"
                   placeholder="000.000.000-00"
                   value={customerTaxId}
-                  onChange={(e) => setCustomerTaxId(e.target.value)}
+                   onChange={(e) => setCustomerTaxId(formatCPFOrCNPJ(e.target.value))}
+                   maxLength={18}
                 />
               </div>
               <Button 
@@ -350,7 +352,7 @@ export default function Checkout() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Pedido #{orderId}</p>
                 <p className="text-3xl font-bold text-primary">
-                  R$ {parseFloat(amount).toFixed(2)}
+                   R$ {amount || '0,00'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Expira em: {formatTimeRemaining()}
@@ -414,7 +416,7 @@ export default function Checkout() {
               <div>
                 <h3 className="text-xl font-bold text-success mb-2">Pagamento Confirmado!</h3>
                 <p className="text-muted-foreground">
-                  Obrigado, {customerName}! Seu pagamento de R$ {parseFloat(amount).toFixed(2)} foi aprovado.
+                   Obrigado, {customerName}! Seu pagamento de R$ {amount || '0,00'} foi aprovado.
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-muted/50 text-left text-sm">

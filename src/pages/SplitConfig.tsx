@@ -57,6 +57,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+ import { formatCPFOrCNPJ } from '@/lib/masks';
 
 export default function SplitConfig() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -346,7 +347,8 @@ export default function SplitConfig() {
                       id="document"
                       placeholder="000.000.000-00"
                       value={document}
-                      onChange={(e) => setDocument(e.target.value)}
+                       onChange={(e) => setDocument(formatCPFOrCNPJ(e.target.value))}
+                       maxLength={18}
                     />
                   </div>
                 </div>
