@@ -38,6 +38,57 @@ export type Database = {
         }
         Relationships: []
       }
+      checkout_configs: {
+        Row: {
+          background_color: string | null
+          created_at: string
+          custom_description: string | null
+          custom_title: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string | null
+          require_cpf: boolean | null
+          require_phone: boolean | null
+          show_product_name: boolean | null
+          success_message: string | null
+          text_color: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string
+          custom_description?: string | null
+          custom_title?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          require_cpf?: boolean | null
+          require_phone?: boolean | null
+          show_product_name?: boolean | null
+          success_message?: string | null
+          text_color?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string
+          custom_description?: string | null
+          custom_title?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          require_cpf?: boolean | null
+          require_phone?: boolean | null
+          show_product_name?: boolean | null
+          success_message?: string | null
+          text_color?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fee_configs: {
         Row: {
           id: string
